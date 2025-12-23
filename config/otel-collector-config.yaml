@@ -1,0 +1,76 @@
+# OpenTelemetry Collector Configuration for Claude Code Analytics
+#
+# This configuration receives metrics from Claude Code and stores them
+# in Prometheus-compatible format for visualization in Grafana.
+#
+# To use:
+# 1. Install the OpenTelemetry Collector: https://opentelemetry.io/docs/collector/installation/
+# 2. Run: otelcol --config=otel-collector-config.yaml
+#
+# Or use Docker:
+# docker run -p 4317:4317 -p 4318:4318 -p 8889:8889 \
+#   -v $(pwd)/otel-collector-config.yaml:/etc/otelcol/config.yaml \
+#   otel/opentelemetry-collector-contrib:latest
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1000
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Add resource attributes for better filtering
+  resource:
+    attributes:
+      - key: service.name
+        value: claude-code
+        action: upsert
+
+exporters:
+  # Prometheus exporter for metrics visualization
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: claude_code
+    const_labels:
+      source: claude-code-analytics
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  # File exporter for backup/debugging
+  file:
+    path: /var/log/claude-code-metrics.json
+    rotation:
+      max_megabytes: 100
+      max_days: 7
+      max_backups: 3
+
+  # Debug/logging exporter (optional)
+  debug:
+    verbosity: basic
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [prometheus, file]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [file]
+
+  telemetry:
+    logs:
+      level: info

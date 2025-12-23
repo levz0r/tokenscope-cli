@@ -1,0 +1,79 @@
+# Claude Code Analytics - OpenTelemetry Stack
+#
+# This docker-compose file sets up a complete observability stack for
+# collecting and visualizing Claude Code metrics including token usage.
+#
+# Usage:
+#   docker-compose up -d
+#
+# Then configure Claude Code to export metrics:
+#   Add to ~/.claude/settings.json:
+#   {
+#     "env": {
+#       "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+#       "OTEL_METRICS_EXPORTER": "otlp",
+#       "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+#     }
+#   }
+#
+# Access:
+#   - Grafana: http://localhost:3000 (admin/admin)
+#   - Prometheus: http://localhost:9090
+
+version: '3.8'
+
+services:
+  # OpenTelemetry Collector - receives metrics from Claude Code
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: cc-analytics-otel
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./config/otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+      - otel-logs:/var/log
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics endpoint
+    restart: unless-stopped
+
+  # Prometheus - stores and queries metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cc-analytics-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=90d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector
+    restart: unless-stopped
+
+  # Grafana - visualization dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cc-analytics-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  otel-logs:

@@ -1,0 +1,539 @@
+#!/bin/bash
+# Claude Code Analytics CLI
+# View and analyze your Claude Code usage statistics
+# Version: 1.0.0
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m' # No Color
+
+# Database location
+DB_DIR="${CLAUDE_ANALYTICS_DIR:-$HOME/.claude/analytics}"
+DB_FILE="${DB_DIR}/analytics.db"
+
+# Check if database exists
+check_db() {
+    if [[ ! -f "$DB_FILE" ]]; then
+        echo -e "${RED}Error: Analytics database not found at $DB_FILE${NC}"
+        echo -e "${DIM}Run the installer or wait for your first Claude Code session to create it.${NC}"
+        exit 1
+    fi
+}
+
+# Format numbers with commas
+format_number() {
+    printf "%'d" "$1" 2>/dev/null || echo "$1"
+}
+
+# Show summary dashboard
+show_summary() {
+    check_db
+
+    echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${CYAN}                    CLAUDE CODE ANALYTICS                       ${NC}"
+    echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════════${NC}"
+    echo
+
+    # Total sessions
+    TOTAL_SESSIONS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM sessions;")
+    ACTIVE_SESSIONS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM sessions WHERE end_time IS NULL;")
+
+    # Today's stats
+    TODAY_SESSIONS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM sessions WHERE date(start_time) = date('now');")
+    TODAY_TOOLS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE date(timestamp) = date('now');")
+
+    # Tool usage
+    TOTAL_TOOLS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses;")
+    TOTAL_WRITES=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Write';")
+    TOTAL_EDITS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Edit';")
+    TOTAL_READS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Read';")
+    TOTAL_BASH=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Bash';")
+
+    # File stats
+    TOTAL_FILES=$(sqlite3 "$DB_FILE" "SELECT COUNT(DISTINCT file_path) FROM file_changes;")
+    LINES_ADDED=$(sqlite3 "$DB_FILE" "SELECT COALESCE(SUM(lines_added), 0) FROM file_changes;")
+    LINES_REMOVED=$(sqlite3 "$DB_FILE" "SELECT COALESCE(SUM(lines_removed), 0) FROM file_changes;")
+
+    # Git stats
+    TOTAL_GIT=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations;")
+    TOTAL_COMMITS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'commit';")
+    TOTAL_PUSHES=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'push';")
+    TOTAL_PRS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'pr-create';")
+
+    echo -e "${BOLD}📊 Overview${NC}"
+    echo -e "   Total Sessions:     ${GREEN}$(format_number $TOTAL_SESSIONS)${NC}"
+    echo -e "   Active Sessions:    ${YELLOW}$(format_number $ACTIVE_SESSIONS)${NC}"
+    echo -e "   Today's Sessions:   ${CYAN}$(format_number $TODAY_SESSIONS)${NC}"
+    echo
+
+    echo -e "${BOLD}🛠  Tool Usage${NC}"
+    echo -e "   Total Tool Calls:   ${GREEN}$(format_number $TOTAL_TOOLS)${NC} (${CYAN}$TODAY_TOOLS${NC} today)"
+    echo -e "   ├─ Write:           $(format_number $TOTAL_WRITES)"
+    echo -e "   ├─ Edit:            $(format_number $TOTAL_EDITS)"
+    echo -e "   ├─ Read:            $(format_number $TOTAL_READS)"
+    echo -e "   └─ Bash:            $(format_number $TOTAL_BASH)"
+    echo
+
+    echo -e "${BOLD}📁 File Changes${NC}"
+    echo -e "   Unique Files:       ${GREEN}$(format_number $TOTAL_FILES)${NC}"
+    echo -e "   Lines Added:        ${GREEN}+$(format_number $LINES_ADDED)${NC}"
+    echo -e "   Lines Removed:      ${RED}-$(format_number $LINES_REMOVED)${NC}"
+    NET_CHANGE=$((LINES_ADDED - LINES_REMOVED))
+    if [[ $NET_CHANGE -ge 0 ]]; then
+        echo -e "   Net Change:         ${GREEN}+$(format_number $NET_CHANGE)${NC}"
+    else
+        echo -e "   Net Change:         ${RED}$(format_number $NET_CHANGE)${NC}"
+    fi
+    echo
+
+    echo -e "${BOLD}🔀 Git Operations${NC}"
+    echo -e "   Total Git Commands: ${GREEN}$(format_number $TOTAL_GIT)${NC}"
+    echo -e "   ├─ Commits:         $(format_number $TOTAL_COMMITS)"
+    echo -e "   ├─ Pushes:          $(format_number $TOTAL_PUSHES)"
+    echo -e "   └─ PRs Created:     $(format_number $TOTAL_PRS)"
+    echo
+}
+
+# Show sessions list
+show_sessions() {
+    check_db
+    local limit="${1:-10}"
+
+    echo -e "${BOLD}${CYAN}Recent Sessions (last $limit)${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            substr(session_id, 1, 8) as 'Session',
+            project_name as 'Project',
+            datetime(start_time, 'localtime') as 'Started',
+            CASE
+                WHEN end_time IS NULL THEN 'Active'
+                ELSE strftime('%H:%M:%S', julianday(end_time) - julianday(start_time))
+            END as 'Duration',
+            (SELECT COUNT(*) FROM tool_uses t WHERE t.session_id = s.session_id) as 'Tools'
+        FROM sessions s
+        ORDER BY start_time DESC
+        LIMIT $limit;
+    "
+}
+
+# Show tool usage breakdown
+show_tools() {
+    check_db
+    local days="${1:-7}"
+
+    echo -e "${BOLD}${CYAN}Tool Usage (last $days days)${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            tool_name as 'Tool',
+            COUNT(*) as 'Uses',
+            SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as 'Success',
+            ROUND(SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) || '%' as 'Rate'
+        FROM tool_uses
+        WHERE timestamp >= datetime('now', '-$days days')
+        GROUP BY tool_name
+        ORDER BY COUNT(*) DESC;
+    "
+}
+
+# Show file changes
+show_files() {
+    check_db
+    local limit="${1:-20}"
+
+    echo -e "${BOLD}${CYAN}Most Modified Files (top $limit)${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            substr(file_path, -50) as 'File',
+            COUNT(*) as 'Changes',
+            SUM(lines_added) as '+Lines',
+            SUM(lines_removed) as '-Lines'
+        FROM file_changes
+        GROUP BY file_path
+        ORDER BY COUNT(*) DESC
+        LIMIT $limit;
+    "
+}
+
+# Show git operations
+show_git() {
+    check_db
+    local days="${1:-7}"
+
+    echo -e "${BOLD}${CYAN}Git Operations (last $days days)${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            operation_type as 'Operation',
+            COUNT(*) as 'Count',
+            SUM(CASE WHEN exit_code = 0 THEN 1 ELSE 0 END) as 'Success',
+            SUM(CASE WHEN exit_code != 0 THEN 1 ELSE 0 END) as 'Failed'
+        FROM git_operations
+        WHERE timestamp >= datetime('now', '-$days days')
+        GROUP BY operation_type
+        ORDER BY COUNT(*) DESC;
+    "
+}
+
+# Show daily trends
+show_daily() {
+    check_db
+    local days="${1:-14}"
+
+    echo -e "${BOLD}${CYAN}Daily Activity (last $days days)${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            date(timestamp) as 'Date',
+            COUNT(DISTINCT session_id) as 'Sessions',
+            COUNT(*) as 'Tools',
+            SUM(CASE WHEN tool_name IN ('Write', 'Edit') THEN 1 ELSE 0 END) as 'Writes'
+        FROM tool_uses
+        WHERE timestamp >= datetime('now', '-$days days')
+        GROUP BY date(timestamp)
+        ORDER BY date(timestamp) DESC;
+    "
+}
+
+# Show projects
+show_projects() {
+    check_db
+
+    echo -e "${BOLD}${CYAN}Projects by Activity${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            COALESCE(project_name, '(unknown)') as 'Project',
+            COUNT(*) as 'Sessions',
+            (SELECT COUNT(*) FROM tool_uses t WHERE t.session_id IN
+                (SELECT session_id FROM sessions s2 WHERE s2.project_name = s.project_name)
+            ) as 'Tool Uses',
+            datetime(MAX(start_time), 'localtime') as 'Last Active'
+        FROM sessions s
+        WHERE project_name IS NOT NULL AND project_name != ''
+        GROUP BY project_name
+        ORDER BY MAX(start_time) DESC
+        LIMIT 20;
+    "
+}
+
+# Show time-based analytics
+show_times() {
+    check_db
+
+    echo -e "${BOLD}${CYAN}Time Analytics${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+    echo
+
+    # Total time spent (completed sessions only)
+    TOTAL_TIME=$(sqlite3 "$DB_FILE" "
+        SELECT COALESCE(
+            printf('%d hrs %d mins',
+                SUM(strftime('%s', end_time) - strftime('%s', start_time)) / 3600,
+                (SUM(strftime('%s', end_time) - strftime('%s', start_time)) % 3600) / 60
+            ),
+            '0 hrs 0 mins'
+        )
+        FROM sessions
+        WHERE end_time IS NOT NULL;
+    ")
+
+    AVG_SESSION=$(sqlite3 "$DB_FILE" "
+        SELECT COALESCE(
+            printf('%d mins',
+                AVG(strftime('%s', end_time) - strftime('%s', start_time)) / 60
+            ),
+            '0 mins'
+        )
+        FROM sessions
+        WHERE end_time IS NOT NULL;
+    ")
+
+    LONGEST_SESSION=$(sqlite3 "$DB_FILE" "
+        SELECT COALESCE(
+            printf('%d mins',
+                MAX(strftime('%s', end_time) - strftime('%s', start_time)) / 60
+            ),
+            '0 mins'
+        )
+        FROM sessions
+        WHERE end_time IS NOT NULL;
+    ")
+
+    # Today's time
+    TODAY_TIME=$(sqlite3 "$DB_FILE" "
+        SELECT COALESCE(
+            printf('%d hrs %d mins',
+                SUM(
+                    strftime('%s', COALESCE(end_time, datetime('now'))) - strftime('%s', start_time)
+                ) / 3600,
+                (SUM(
+                    strftime('%s', COALESCE(end_time, datetime('now'))) - strftime('%s', start_time)
+                ) % 3600) / 60
+            ),
+            '0 hrs 0 mins'
+        )
+        FROM sessions
+        WHERE date(start_time) = date('now');
+    ")
+
+    echo -e "${BOLD}⏱  Session Duration${NC}"
+    echo -e "   Total Time:         ${GREEN}$TOTAL_TIME${NC}"
+    echo -e "   Today's Time:       ${CYAN}$TODAY_TIME${NC}"
+    echo -e "   Average Session:    ${YELLOW}$AVG_SESSION${NC}"
+    echo -e "   Longest Session:    ${BLUE}$LONGEST_SESSION${NC}"
+    echo
+
+    echo -e "${BOLD}📅 Activity by Hour (Last 7 Days)${NC}"
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            printf('%02d:00', strftime('%H', timestamp)) as 'Hour',
+            COUNT(*) as 'Tool Calls',
+            COUNT(DISTINCT session_id) as 'Sessions'
+        FROM tool_uses
+        WHERE timestamp >= datetime('now', '-7 days')
+        GROUP BY strftime('%H', timestamp)
+        ORDER BY strftime('%H', timestamp);
+    "
+    echo
+
+    echo -e "${BOLD}📆 Activity by Day of Week${NC}"
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            CASE strftime('%w', timestamp)
+                WHEN '0' THEN 'Sunday'
+                WHEN '1' THEN 'Monday'
+                WHEN '2' THEN 'Tuesday'
+                WHEN '3' THEN 'Wednesday'
+                WHEN '4' THEN 'Thursday'
+                WHEN '5' THEN 'Friday'
+                WHEN '6' THEN 'Saturday'
+            END as 'Day',
+            COUNT(*) as 'Tool Calls',
+            COUNT(DISTINCT date(timestamp)) as 'Active Days'
+        FROM tool_uses
+        GROUP BY strftime('%w', timestamp)
+        ORDER BY strftime('%w', timestamp);
+    "
+}
+
+# Show hourly heatmap
+show_hourly() {
+    check_db
+
+    echo -e "${BOLD}${CYAN}Hourly Activity Heatmap (Last 30 Days)${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+    echo
+
+    # Get max count for scaling
+    MAX_COUNT=$(sqlite3 "$DB_FILE" "
+        SELECT MAX(cnt) FROM (
+            SELECT COUNT(*) as cnt
+            FROM tool_uses
+            WHERE timestamp >= datetime('now', '-30 days')
+            GROUP BY strftime('%H', timestamp)
+        );
+    ")
+
+    if [[ -z "$MAX_COUNT" ]] || [[ "$MAX_COUNT" == "0" ]]; then
+        echo -e "${DIM}No activity data yet.${NC}"
+        return
+    fi
+
+    echo -e "Hour  Activity"
+    echo -e "────  ────────────────────────────────────────────────"
+
+    for hour in $(seq -w 0 23); do
+        COUNT=$(sqlite3 "$DB_FILE" "
+            SELECT COUNT(*)
+            FROM tool_uses
+            WHERE timestamp >= datetime('now', '-30 days')
+            AND strftime('%H', timestamp) = '$hour';
+        ")
+
+        # Calculate bar length (max 40 chars)
+        if [[ "$MAX_COUNT" -gt 0 ]]; then
+            BAR_LEN=$((COUNT * 40 / MAX_COUNT))
+        else
+            BAR_LEN=0
+        fi
+
+        # Build the bar
+        BAR=""
+        for ((i=0; i<BAR_LEN; i++)); do
+            BAR="${BAR}█"
+        done
+
+        # Color based on intensity
+        if [[ $BAR_LEN -gt 30 ]]; then
+            COLOR=$GREEN
+        elif [[ $BAR_LEN -gt 15 ]]; then
+            COLOR=$YELLOW
+        elif [[ $BAR_LEN -gt 0 ]]; then
+            COLOR=$BLUE
+        else
+            COLOR=$DIM
+        fi
+
+        printf "%s:00  ${COLOR}%-40s${NC} %d\n" "$hour" "$BAR" "$COUNT"
+    done
+}
+
+# Show session timeline
+show_timeline() {
+    check_db
+    local days="${1:-7}"
+
+    echo -e "${BOLD}${CYAN}Session Timeline (Last $days Days)${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+
+    sqlite3 -header -column "$DB_FILE" "
+        SELECT
+            date(start_time, 'localtime') as 'Date',
+            time(start_time, 'localtime') as 'Start',
+            COALESCE(time(end_time, 'localtime'), 'Active') as 'End',
+            CASE
+                WHEN end_time IS NULL THEN 'Running'
+                ELSE printf('%d min', (strftime('%s', end_time) - strftime('%s', start_time)) / 60)
+            END as 'Duration',
+            project_name as 'Project',
+            (SELECT COUNT(*) FROM tool_uses t WHERE t.session_id = s.session_id) as 'Tools'
+        FROM sessions s
+        WHERE start_time >= datetime('now', '-$days days')
+        ORDER BY start_time DESC;
+    "
+}
+
+# Export data to JSON
+export_json() {
+    check_db
+    local output="${1:-analytics-export.json}"
+
+    echo -e "${CYAN}Exporting analytics to $output...${NC}"
+
+    sqlite3 "$DB_FILE" "
+        SELECT json_object(
+            'exported_at', datetime('now'),
+            'summary', json_object(
+                'total_sessions', (SELECT COUNT(*) FROM sessions),
+                'total_tool_uses', (SELECT COUNT(*) FROM tool_uses),
+                'total_files_changed', (SELECT COUNT(DISTINCT file_path) FROM file_changes),
+                'total_git_operations', (SELECT COUNT(*) FROM git_operations),
+                'lines_added', (SELECT COALESCE(SUM(lines_added), 0) FROM file_changes),
+                'lines_removed', (SELECT COALESCE(SUM(lines_removed), 0) FROM file_changes)
+            )
+        );
+    " > "$output"
+
+    echo -e "${GREEN}Export complete: $output${NC}"
+}
+
+# Reset/clear analytics
+reset_analytics() {
+    check_db
+
+    echo -e "${YELLOW}WARNING: This will delete all analytics data!${NC}"
+    read -p "Are you sure? (type 'yes' to confirm): " confirm
+
+    if [[ "$confirm" == "yes" ]]; then
+        rm -f "$DB_FILE"
+        echo -e "${GREEN}Analytics data has been reset.${NC}"
+    else
+        echo -e "${DIM}Cancelled.${NC}"
+    fi
+}
+
+# Show help
+show_help() {
+    echo -e "${BOLD}Claude Code Analytics CLI${NC}"
+    echo
+    echo -e "${BOLD}Usage:${NC} cc-analytics <command> [options]"
+    echo
+    echo -e "${BOLD}Commands:${NC}"
+    echo -e "  ${GREEN}summary${NC}            Show overview dashboard (default)"
+    echo -e "  ${GREEN}sessions${NC} [n]       List recent sessions (default: 10)"
+    echo -e "  ${GREEN}tools${NC} [days]       Show tool usage breakdown (default: 7 days)"
+    echo -e "  ${GREEN}files${NC} [n]          Show most modified files (default: 20)"
+    echo -e "  ${GREEN}git${NC} [days]         Show git operations (default: 7 days)"
+    echo -e "  ${GREEN}daily${NC} [days]       Show daily activity trends (default: 14 days)"
+    echo -e "  ${GREEN}times${NC}              Show time analytics (durations, hourly, weekly)"
+    echo -e "  ${GREEN}hourly${NC}             Show hourly activity heatmap"
+    echo -e "  ${GREEN}timeline${NC} [days]    Show session timeline (default: 7 days)"
+    echo -e "  ${GREEN}projects${NC}           Show projects by activity"
+    echo -e "  ${GREEN}export${NC} [file]      Export data to JSON"
+    echo -e "  ${GREEN}reset${NC}              Clear all analytics data"
+    echo -e "  ${GREEN}help${NC}               Show this help message"
+    echo
+    echo -e "${BOLD}Examples:${NC}"
+    echo -e "  cc-analytics                    # Show summary"
+    echo -e "  cc-analytics sessions 20        # Show last 20 sessions"
+    echo -e "  cc-analytics tools 30           # Show tool usage for last 30 days"
+    echo -e "  cc-analytics export data.json   # Export to data.json"
+    echo
+    echo -e "${DIM}Database location: $DB_FILE${NC}"
+}
+
+# Main command routing
+case "${1:-summary}" in
+    summary|s)
+        show_summary
+        ;;
+    sessions|sess)
+        show_sessions "${2:-10}"
+        ;;
+    tools|t)
+        show_tools "${2:-7}"
+        ;;
+    files|f)
+        show_files "${2:-20}"
+        ;;
+    git|g)
+        show_git "${2:-7}"
+        ;;
+    daily|d)
+        show_daily "${2:-14}"
+        ;;
+    times|time)
+        show_times
+        ;;
+    hourly|heatmap)
+        show_hourly
+        ;;
+    timeline|tl)
+        show_timeline "${2:-7}"
+        ;;
+    projects|p)
+        show_projects
+        ;;
+    export|e)
+        export_json "${2:-analytics-export.json}"
+        ;;
+    reset)
+        reset_analytics
+        ;;
+    help|h|-h|--help)
+        show_help
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $1${NC}"
+        echo
+        show_help
+        exit 1
+        ;;
+esac

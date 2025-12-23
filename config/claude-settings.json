@@ -1,0 +1,117 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/settings.schema.json",
+  "_comment": "Claude Code Analytics - Hook Configuration",
+  "_instructions": "Merge this into your ~/.claude/settings.json or project .claude/settings.json",
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  },
+
+  "env": {
+    "CLAUDE_ANALYTICS_DIR": "$HOME/.claude/analytics"
+  }
+}
