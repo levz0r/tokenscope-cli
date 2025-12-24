@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { DashboardCarousel } from '@/components/landing/DashboardCarousel'
+import Squares from '@/components/backgrounds/Squares'
 
 const features = [
   {
@@ -47,11 +48,15 @@ const features = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden">
-      {/* Background glow effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-emerald-900/20 rounded-full blur-[150px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-800/15 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-950/30 rounded-full blur-[200px]" />
+      {/* Animated squares background */}
+      <div className="absolute inset-0 z-0">
+        <Squares
+          direction="diagonal"
+          speed={0.3}
+          squareSize={50}
+          borderColor="rgba(16, 185, 129, 0.1)"
+          hoverFillColor="rgba(16, 185, 129, 0.15)"
+        />
       </div>
 
       {/* Header */}
@@ -162,9 +167,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="relative z-10 container mx-auto px-6 py-24">
-        <div className="relative rounded-3xl bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 p-12 md:p-16 text-center overflow-hidden">
-          {/* CTA background glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-emerald-500/10 rounded-full blur-[100px]" />
+        <div className="relative rounded-3xl bg-white/[0.02] border border-white/5 p-12 md:p-16 text-center overflow-hidden backdrop-blur-sm">
 
           <h2 className="relative font-serif text-3xl md:text-4xl font-light mb-4">
             <span className="text-gray-400">Ready to</span>{' '}
