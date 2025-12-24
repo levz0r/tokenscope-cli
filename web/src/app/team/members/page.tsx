@@ -1,8 +1,10 @@
 import { getServerAuth } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Users, Plus, Mail, Crown, Shield, User, MoreVertical } from 'lucide-react'
+import { Users, Mail, Crown, Shield, User, Clock } from 'lucide-react'
+import { InviteMemberForm } from '@/components/team/InviteMemberForm'
+import { MemberActions } from '@/components/team/MemberActions'
+import { formatDistanceToNow } from 'date-fns'
 
 interface TeamMember {
   id: string
@@ -12,9 +14,18 @@ interface TeamMember {
   joined: string
 }
 
+interface PendingInvite {
+  id: string
+  email: string
+  role: string
+  created_at: string
+  expires_at: string
+}
+
 interface TeamData {
   team: { id: string; name: string } | null
   members: TeamMember[]
+  pendingInvites: PendingInvite[]
   userRole: 'owner' | 'admin' | 'member' | null
 }
 
@@ -46,7 +57,7 @@ async function getTeamMembers(
 
   const membership = membershipData as MembershipData | null
   if (!membership) {
-    return { team: null, members: [], userRole: null }
+    return { team: null, members: [], pendingInvites: [], userRole: null }
   }
 
   // Get team details
@@ -57,7 +68,7 @@ async function getTeamMembers(
     .single()
 
   if (!team) {
-    return { team: null, members: [], userRole: null }
+    return { team: null, members: [], pendingInvites: [], userRole: null }
   }
 
   // Get all team members
@@ -75,9 +86,21 @@ async function getTeamMembers(
     joined: m.created_at,
   }))
 
+  // Get pending invites
+  const { data: invitesData } = await db
+    .from('team_invites')
+    .select('id, email, role, created_at, expires_at')
+    .eq('team_id', team.id)
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+
+  const pendingInvites = (invitesData || []) as PendingInvite[]
+
   return {
     team,
     members: teamMembers,
+    pendingInvites,
     userRole: membership.role as 'owner' | 'admin' | 'member',
   }
 }
@@ -113,7 +136,7 @@ export default async function TeamMembersPage() {
 
   if (!user || !db) return null
 
-  const { team, members, userRole } = await getTeamMembers(user.id, db)
+  const { team, members, pendingInvites, userRole } = await getTeamMembers(user.id, db)
 
   if (!team) {
     return (
@@ -139,15 +162,9 @@ export default async function TeamMembersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Team Members</h1>
-          <p className="text-slate-400">Manage {team.name} members</p>
-        </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Invite Member
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold text-white">Team Members</h1>
+        <p className="text-slate-400">Manage {team.name} members</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -176,7 +193,7 @@ export default async function TeamMembersPage() {
             <CardDescription className="text-slate-400">Pending Invites</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-400">0</div>
+            <div className="text-2xl font-bold text-amber-400">{pendingInvites.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -213,10 +230,13 @@ export default async function TeamMembersPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   {getRoleBadge(member.role)}
-                  {userRole === 'owner' && member.role !== 'owner' && (
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+                  {userRole && member.role !== 'owner' && member.id !== user.id && (
+                    <MemberActions
+                      memberId={member.id}
+                      memberRole={member.role as 'admin' | 'member'}
+                      teamId={team.id}
+                      currentUserRole={userRole as 'owner' | 'admin'}
+                    />
                   )}
                 </div>
               </div>
@@ -224,6 +244,45 @@ export default async function TeamMembersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {pendingInvites.length > 0 && (
+        <Card className="border-slate-700 bg-slate-800/50">
+          <CardHeader>
+            <CardTitle className="text-white">Pending Invites</CardTitle>
+            <CardDescription className="text-slate-400">
+              Invitations waiting to be accepted
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pendingInvites.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="flex items-center justify-between p-3 bg-slate-900 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-500/10 rounded-full">
+                      <Clock className="h-4 w-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-white">{invite.email}</div>
+                      <div className="text-xs text-slate-500">
+                        Invited {formatDistanceToNow(new Date(invite.created_at), { addSuffix: true })}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getRoleBadge(invite.role)}
+                    <span className="text-xs text-slate-500">
+                      Expires {formatDistanceToNow(new Date(invite.expires_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-slate-700 bg-slate-800/50">
         <CardHeader>
@@ -233,17 +292,7 @@ export default async function TeamMembersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
-            <input
-              type="email"
-              placeholder="colleague@company.com"
-              className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Mail className="mr-2 h-4 w-4" />
-              Send Invite
-            </Button>
-          </div>
+          <InviteMemberForm teamId={team.id} />
         </CardContent>
       </Card>
     </div>
