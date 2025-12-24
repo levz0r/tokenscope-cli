@@ -10,6 +10,7 @@ import {
   Clock,
   GitBranch,
   Plug,
+  FolderKanban,
   Users,
   Settings,
 } from 'lucide-react'
@@ -39,6 +40,11 @@ const navigation = [
     name: 'Git',
     href: '/dashboard/git',
     icon: GitBranch,
+  },
+  {
+    name: 'Projects',
+    href: '/dashboard/projects',
+    icon: FolderKanban,
   },
   {
     name: 'MCP',
