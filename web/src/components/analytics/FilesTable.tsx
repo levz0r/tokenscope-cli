@@ -29,15 +29,15 @@ function getFileIcon(filePath: string) {
     tsx: 'text-blue-400',
     js: 'text-yellow-400',
     jsx: 'text-yellow-400',
-    py: 'text-green-400',
+    py: 'text-emerald-400',
     go: 'text-cyan-400',
     rs: 'text-orange-400',
-    md: 'text-slate-400',
+    md: 'text-gray-400',
     json: 'text-yellow-300',
     css: 'text-pink-400',
     html: 'text-orange-300',
   }
-  return colors[ext || ''] || 'text-slate-400'
+  return colors[ext || ''] || 'text-gray-400'
 }
 
 function getFileName(filePath: string) {
@@ -58,7 +58,7 @@ const columns: ColumnDef<FileStats>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <FileCode className="mr-2 h-4 w-4" />
         File
@@ -73,7 +73,7 @@ const columns: ColumnDef<FileStats>[] = [
             <FileCode className={`h-4 w-4 ${getFileIcon(filePath)}`} />
             <span className="text-white font-medium">{getFileName(filePath)}</span>
           </div>
-          <span className="text-xs text-slate-500 ml-6">{getFileDir(filePath)}</span>
+          <span className="text-xs text-gray-500 ml-6">{getFileDir(filePath)}</span>
         </div>
       )
     },
@@ -84,7 +84,7 @@ const columns: ColumnDef<FileStats>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         Operations
         <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -100,7 +100,7 @@ const columns: ColumnDef<FileStats>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <FilePlus className="mr-2 h-4 w-4" />
         Added
@@ -109,7 +109,7 @@ const columns: ColumnDef<FileStats>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue('lines_added') as number
-      return <span className="text-green-400">+{value.toLocaleString()}</span>
+      return <span className="text-emerald-400">+{value.toLocaleString()}</span>
     },
   },
   {
@@ -118,7 +118,7 @@ const columns: ColumnDef<FileStats>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <FileMinus className="mr-2 h-4 w-4" />
         Removed
@@ -138,7 +138,7 @@ const columns: ColumnDef<FileStats>[] = [
       const removed = row.original.lines_removed
       const net = added - removed
       return (
-        <span className={net >= 0 ? 'text-green-400' : 'text-red-400'}>
+        <span className={net >= 0 ? 'text-emerald-400' : 'text-red-400'}>
           {net >= 0 ? '+' : ''}{net.toLocaleString()}
         </span>
       )
@@ -150,7 +150,7 @@ const columns: ColumnDef<FileStats>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <Clock className="mr-2 h-4 w-4" />
         Last Modified
@@ -160,7 +160,7 @@ const columns: ColumnDef<FileStats>[] = [
     cell: ({ row }) => {
       const timestamp = row.getValue('last_modified') as string
       return (
-        <span className="text-slate-400">
+        <span className="text-gray-400">
           {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
         </span>
       )
@@ -191,9 +191,9 @@ export function FilesTable({ files }: FilesTableProps) {
   if (files.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <FileCode className="h-12 w-12 text-slate-600 mb-4" />
-        <p className="text-slate-400">No file changes yet</p>
-        <p className="text-sm text-slate-500">
+        <FileCode className="h-12 w-12 text-gray-600 mb-4" />
+        <p className="text-gray-400">No file changes yet</p>
+        <p className="text-sm text-gray-500">
           Sync your analytics to see file modifications
         </p>
       </div>
@@ -201,13 +201,13 @@ export function FilesTable({ files }: FilesTableProps) {
   }
 
   return (
-    <div className="rounded-md border border-slate-700">
+    <div className="rounded-md border border-white/5">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-slate-700 hover:bg-transparent">
+            <TableRow key={headerGroup.id} className="border-white/5 hover:bg-transparent">
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="text-slate-400">
+                <TableHead key={header.id} className="text-gray-400">
                   {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
@@ -220,7 +220,7 @@ export function FilesTable({ files }: FilesTableProps) {
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className="border-slate-700 hover:bg-slate-800/50"
+              className="border-white/5 hover:bg-white/[0.02]"
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>

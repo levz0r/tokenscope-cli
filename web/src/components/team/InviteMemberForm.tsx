@@ -64,12 +64,12 @@ export function InviteMemberForm({ teamId }: InviteMemberFormProps) {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="colleague@company.com"
           required
-          className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-2 bg-[#0a0a0a] border border-white/5 rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as 'member' | 'admin')}
-          className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 bg-[#0a0a0a] border border-white/5 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="member">Member</option>
           <option value="admin">Admin</option>
@@ -93,10 +93,10 @@ export function InviteMemberForm({ teamId }: InviteMemberFormProps) {
       {success && inviteUrl && (
         <div className="bg-green-900/20 border border-green-800 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="h-4 w-4 text-green-400" />
-            <span className="text-green-400 font-medium">Invite created!</span>
+            <CheckCircle className="h-4 w-4 text-emerald-400" />
+            <span className="text-emerald-400 font-medium">Invite created!</span>
           </div>
-          <p className="text-sm text-slate-400 mb-3">
+          <p className="text-sm text-gray-400 mb-3">
             Share this link with the invitee:
           </p>
           <div className="flex gap-2">
@@ -104,7 +104,7 @@ export function InviteMemberForm({ teamId }: InviteMemberFormProps) {
               type="text"
               value={inviteUrl}
               readOnly
-              className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white text-sm"
+              className="flex-1 px-3 py-2 bg-[#0a0a0a] border border-white/5 rounded-md text-white text-sm"
             />
             <Button
               type="button"
@@ -113,7 +113,7 @@ export function InviteMemberForm({ teamId }: InviteMemberFormProps) {
               className={buttonStyles.primary}
             >
               {copied ? (
-                <CheckCircle className="h-4 w-4 text-green-400" />
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}

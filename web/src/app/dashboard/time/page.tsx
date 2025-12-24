@@ -120,13 +120,13 @@ export default async function TimePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Time Analytics</h1>
-        <p className="text-slate-400">Your coding activity patterns</p>
+        <p className="text-gray-400">Your coding activity patterns</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Peak Hour
             </CardDescription>
@@ -136,9 +136,9 @@ export default async function TimePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Peak Day
             </CardDescription>
@@ -148,9 +148,9 @@ export default async function TimePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Sun className="h-4 w-4" />
               Day Activity
             </CardDescription>
@@ -159,13 +159,13 @@ export default async function TimePage() {
             <div className="text-2xl font-bold text-amber-400">
               {(stats.morningActivity + stats.afternoonActivity).toLocaleString()}
             </div>
-            <p className="text-xs text-slate-500">6 AM - 6 PM</p>
+            <p className="text-xs text-gray-500">6 AM - 6 PM</p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Moon className="h-4 w-4" />
               Night Activity
             </CardDescription>
@@ -174,16 +174,16 @@ export default async function TimePage() {
             <div className="text-2xl font-bold text-indigo-400">
               {(stats.eveningActivity + stats.nightActivity).toLocaleString()}
             </div>
-            <p className="text-xs text-slate-500">6 PM - 6 AM</p>
+            <p className="text-xs text-gray-500">6 PM - 6 AM</p>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Hourly Activity</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Tool usage by hour of day
             </CardDescription>
           </CardHeader>
@@ -192,10 +192,10 @@ export default async function TimePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Activity Heatmap</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Daily activity over the last 30 days
             </CardDescription>
           </CardHeader>

@@ -16,7 +16,7 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
   const maxCount = Math.max(...data.map(d => d.count), 1)
 
   const getIntensity = (count: number) => {
-    if (count === 0) return 'bg-slate-800'
+    if (count === 0) return 'bg-[#0a0a0a]'
     const ratio = count / maxCount
     if (ratio < 0.25) return 'bg-emerald-900/50'
     if (ratio < 0.5) return 'bg-emerald-700/60'
@@ -52,8 +52,8 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
   if (data.every(d => d.count === 0)) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-slate-400">No activity data yet</p>
-        <p className="text-sm text-slate-500">
+        <p className="text-gray-400">No activity data yet</p>
+        <p className="text-sm text-gray-500">
           Sync your analytics to see daily patterns
         </p>
       </div>
@@ -63,7 +63,7 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
   return (
     <div className="space-y-4">
       <div className="flex gap-1">
-        <div className="w-8 flex flex-col gap-1 text-xs text-slate-500">
+        <div className="w-8 flex flex-col gap-1 text-xs text-gray-500">
           {dayLabels.map((label, i) => (
             <div key={label} className="h-4 flex items-center">
               {i % 2 === 1 ? label : ''}
@@ -85,10 +85,10 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 text-xs text-slate-500">
+      <div className="flex items-center justify-end gap-2 text-xs text-gray-500">
         <span>Less</span>
         <div className="flex gap-1">
-          <div className="w-3 h-3 rounded-sm bg-slate-800" />
+          <div className="w-3 h-3 rounded-sm bg-[#0a0a0a]" />
           <div className="w-3 h-3 rounded-sm bg-emerald-900/50" />
           <div className="w-3 h-3 rounded-sm bg-emerald-700/60" />
           <div className="w-3 h-3 rounded-sm bg-emerald-500/70" />

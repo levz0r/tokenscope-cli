@@ -36,7 +36,7 @@ function getRoleIcon(role: string) {
     case 'admin':
       return <Shield className="h-4 w-4 text-blue-400" />
     default:
-      return <User className="h-4 w-4 text-slate-400" />
+      return <User className="h-4 w-4 text-gray-400" />
   }
 }
 
@@ -44,7 +44,7 @@ function getRoleBadge(role: string) {
   const styles: Record<string, string> = {
     owner: 'bg-amber-400/10 text-amber-400',
     admin: 'bg-blue-400/10 text-blue-400',
-    member: 'bg-slate-400/10 text-slate-400',
+    member: 'bg-gray-400/10 text-gray-400',
   }
   return (
     <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${styles[role] || styles.member}`}>
@@ -183,7 +183,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
 
   const stats = [
     { label: 'Members', value: team.member_count, icon: Users, color: 'text-blue-400' },
-    { label: 'Sessions', value: team.total_sessions, icon: Terminal, color: 'text-green-400' },
+    { label: 'Sessions', value: team.total_sessions, icon: Terminal, color: 'text-emerald-400' },
     { label: 'Tool Uses', value: team.total_tool_uses.toLocaleString(), icon: FileCode, color: 'text-purple-400' },
     { label: 'File Changes', value: team.total_file_changes.toLocaleString(), icon: FileCode, color: 'text-orange-400' },
     { label: 'Git Operations', value: team.total_git_operations, icon: GitCommit, color: 'text-pink-400' },
@@ -194,23 +194,23 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/team">
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white">{team.name}</h1>
-          <p className="text-slate-400">Team dashboard and analytics</p>
+          <p className="text-gray-400">Team dashboard and analytics</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.label} className="border-slate-700 bg-slate-800/50">
+          <Card key={stat.label} className="border-white/5 bg-white/[0.02]">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-400">{stat.label}</p>
+                  <p className="text-sm text-gray-400">{stat.label}</p>
                   <p className="text-2xl font-bold text-white">{stat.value}</p>
                 </div>
                 <stat.icon className={`h-8 w-8 ${stat.color}`} />
@@ -220,10 +220,10 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
         ))}
       </div>
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Team Members</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             People in this team
           </CardDescription>
         </CardHeader>
@@ -233,11 +233,11 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
               {team.members.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between p-3 bg-slate-900 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-slate-700 text-white text-sm">
+                      <AvatarFallback className="bg-white/10 text-white text-sm">
                         {member.email?.slice(0, 2).toUpperCase() || '??'}
                       </AvatarFallback>
                     </Avatar>
@@ -245,7 +245,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
                       <div className="font-medium text-white text-sm">
                         {member.name || member.email?.split('@')[0] || 'Unknown'}
                       </div>
-                      <div className="text-xs text-slate-500">{member.email}</div>
+                      <div className="text-xs text-gray-500">{member.email}</div>
                     </div>
                   </div>
                   {getRoleBadge(member.role)}
@@ -253,20 +253,20 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
               ))}
             </div>
           ) : (
-            <p className="text-slate-400 text-sm">No members yet</p>
+            <p className="text-gray-400 text-sm">No members yet</p>
           )}
         </CardContent>
       </Card>
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Recent Activity</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Latest sessions from team members
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-400 text-sm">
+          <p className="text-gray-400 text-sm">
             Activity feed coming soon...
           </p>
         </CardContent>
@@ -279,15 +279,15 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
               <AlertTriangle className="h-5 w-5" />
               Danger Zone
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Irreversible and destructive actions
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 border border-red-900/50 rounded-lg bg-slate-900/50">
+            <div className="flex items-center justify-between p-4 border border-red-900/50 rounded-lg bg-[#0a0a0a]/50">
               <div>
                 <h4 className="font-medium text-white">Delete this team</h4>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-gray-400">
                   Once you delete a team, there is no going back. All data will be permanently removed.
                 </p>
               </div>

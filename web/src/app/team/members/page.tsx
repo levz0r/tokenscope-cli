@@ -112,7 +112,7 @@ function getRoleIcon(role: string) {
     case 'admin':
       return <Shield className="h-4 w-4 text-blue-400" />
     default:
-      return <User className="h-4 w-4 text-slate-400" />
+      return <User className="h-4 w-4 text-gray-400" />
   }
 }
 
@@ -120,7 +120,7 @@ function getRoleBadge(role: string) {
   const styles: Record<string, string> = {
     owner: 'bg-amber-400/10 text-amber-400',
     admin: 'bg-blue-400/10 text-blue-400',
-    member: 'bg-slate-400/10 text-slate-400',
+    member: 'bg-gray-400/10 text-gray-400',
   }
 
   return (
@@ -143,14 +143,14 @@ export default async function TeamMembersPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Team Members</h1>
-          <p className="text-slate-400">Manage your team</p>
+          <p className="text-gray-400">Manage your team</p>
         </div>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Users className="h-16 w-16 text-slate-600 mb-4" />
+            <Users className="h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No Team Access</h3>
-            <p className="text-slate-400 text-center max-w-md">
+            <p className="text-gray-400 text-center max-w-md">
               You need to be an owner or admin of a team to manage members.
               Create a team first or ask your team owner for admin access.
             </p>
@@ -164,22 +164,22 @@ export default async function TeamMembersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Team Members</h1>
-        <p className="text-slate-400">Manage {team.name} members</p>
+        <p className="text-gray-400">Manage {team.name} members</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400">Total Members</CardDescription>
+            <CardDescription className="text-gray-400">Total Members</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">{members.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400">Admins</CardDescription>
+            <CardDescription className="text-gray-400">Admins</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-400">
@@ -188,9 +188,9 @@ export default async function TeamMembersPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400">Pending Invites</CardDescription>
+            <CardDescription className="text-gray-400">Pending Invites</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-400">{pendingInvites.length}</div>
@@ -198,10 +198,10 @@ export default async function TeamMembersPage() {
         </Card>
       </div>
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Members</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             People with access to {team.name}
           </CardDescription>
         </CardHeader>
@@ -210,11 +210,11 @@ export default async function TeamMembersPage() {
             {members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between p-4 bg-slate-900 rounded-lg"
+                className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg"
               >
                 <div className="flex items-center gap-4">
                   <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-slate-700 text-white">
+                    <AvatarFallback className="bg-white/10 text-white">
                       {member.email?.slice(0, 2).toUpperCase() || '??'}
                     </AvatarFallback>
                   </Avatar>
@@ -222,7 +222,7 @@ export default async function TeamMembersPage() {
                     <div className="font-medium text-white">
                       {member.name || member.email?.split('@')[0] || 'Unknown'}
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-slate-400">
+                    <div className="flex items-center gap-1 text-sm text-gray-400">
                       <Mail className="h-3 w-3" />
                       {member.email}
                     </div>
@@ -246,10 +246,10 @@ export default async function TeamMembersPage() {
       </Card>
 
       {pendingInvites.length > 0 && (
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Pending Invites</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Invitations waiting to be accepted
             </CardDescription>
           </CardHeader>
@@ -258,7 +258,7 @@ export default async function TeamMembersPage() {
               {pendingInvites.map((invite) => (
                 <div
                   key={invite.id}
-                  className="flex items-center justify-between p-3 bg-slate-900 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-amber-500/10 rounded-full">
@@ -266,14 +266,14 @@ export default async function TeamMembersPage() {
                     </div>
                     <div>
                       <div className="text-sm font-medium text-white">{invite.email}</div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-gray-500">
                         Invited {formatDistanceToNow(new Date(invite.created_at), { addSuffix: true })}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {getRoleBadge(invite.role)}
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-gray-500">
                       Expires {formatDistanceToNow(new Date(invite.expires_at), { addSuffix: true })}
                     </span>
                   </div>
@@ -284,10 +284,10 @@ export default async function TeamMembersPage() {
         </Card>
       )}
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Invite by Email</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Send an invite link to add new team members
           </CardDescription>
         </CardHeader>

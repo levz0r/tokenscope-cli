@@ -25,11 +25,11 @@ interface GitOperation {
 
 function getOperationIcon(type: string) {
   const t = type?.toLowerCase() || ''
-  if (t.includes('commit')) return <GitCommit className="h-4 w-4 text-green-400" />
+  if (t.includes('commit')) return <GitCommit className="h-4 w-4 text-emerald-400" />
   if (t.includes('push')) return <GitPullRequest className="h-4 w-4 text-blue-400" />
   if (t.includes('branch') || t.includes('checkout')) return <GitBranch className="h-4 w-4 text-purple-400" />
   if (t.includes('merge')) return <GitMerge className="h-4 w-4 text-orange-400" />
-  return <GitBranch className="h-4 w-4 text-slate-400" />
+  return <GitBranch className="h-4 w-4 text-gray-400" />
 }
 
 function getOperationLabel(type: string) {
@@ -51,7 +51,7 @@ const columns: ColumnDef<GitOperation>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         Operation
         <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -72,12 +72,12 @@ const columns: ColumnDef<GitOperation>[] = [
     header: 'Command',
     cell: ({ row }) => {
       const command = row.getValue('command') as string | null
-      if (!command) return <span className="text-slate-500">-</span>
+      if (!command) return <span className="text-gray-500">-</span>
 
       // Truncate long commands
       const truncated = command.length > 60 ? command.slice(0, 60) + '...' : command
       return (
-        <code className="text-xs text-slate-300 bg-slate-800 px-2 py-1 rounded" title={command}>
+        <code className="text-xs text-gray-300 bg-[#0a0a0a] px-2 py-1 rounded" title={command}>
           {truncated}
         </code>
       )
@@ -89,7 +89,7 @@ const columns: ColumnDef<GitOperation>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <Folder className="mr-2 h-4 w-4" />
         Project
@@ -97,7 +97,7 @@ const columns: ColumnDef<GitOperation>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="text-slate-300">{row.getValue('project_name') || 'Unknown'}</span>
+      <span className="text-gray-300">{row.getValue('project_name') || 'Unknown'}</span>
     ),
   },
   {
@@ -109,11 +109,11 @@ const columns: ColumnDef<GitOperation>[] = [
       return (
         <div className="flex items-center gap-1">
           {success ? (
-            <CheckCircle className="h-4 w-4 text-green-400" />
+            <CheckCircle className="h-4 w-4 text-emerald-400" />
           ) : (
             <XCircle className="h-4 w-4 text-red-400" />
           )}
-          <span className={success ? 'text-green-400' : 'text-red-400'}>
+          <span className={success ? 'text-emerald-400' : 'text-red-400'}>
             {success ? 'Success' : `Exit ${exitCode}`}
           </span>
         </div>
@@ -126,7 +126,7 @@ const columns: ColumnDef<GitOperation>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <Clock className="mr-2 h-4 w-4" />
         Time
@@ -136,9 +136,9 @@ const columns: ColumnDef<GitOperation>[] = [
     cell: ({ row }) => {
       const timestamp = row.getValue('timestamp') as string
       return (
-        <div className="text-slate-300">
+        <div className="text-gray-300">
           <div>{format(new Date(timestamp), 'MMM d, HH:mm')}</div>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-gray-500">
             {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
           </div>
         </div>
@@ -170,9 +170,9 @@ export function GitTable({ operations }: GitTableProps) {
   if (operations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <GitBranch className="h-12 w-12 text-slate-600 mb-4" />
-        <p className="text-slate-400">No git operations yet</p>
-        <p className="text-sm text-slate-500">
+        <GitBranch className="h-12 w-12 text-gray-600 mb-4" />
+        <p className="text-gray-400">No git operations yet</p>
+        <p className="text-sm text-gray-500">
           Sync your analytics to see git activity
         </p>
       </div>
@@ -180,13 +180,13 @@ export function GitTable({ operations }: GitTableProps) {
   }
 
   return (
-    <div className="rounded-md border border-slate-700">
+    <div className="rounded-md border border-white/5">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-slate-700 hover:bg-transparent">
+            <TableRow key={headerGroup.id} className="border-white/5 hover:bg-transparent">
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="text-slate-400">
+                <TableHead key={header.id} className="text-gray-400">
                   {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
@@ -199,7 +199,7 @@ export function GitTable({ operations }: GitTableProps) {
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className="border-slate-700 hover:bg-slate-800/50"
+              className="border-white/5 hover:bg-white/[0.02]"
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>

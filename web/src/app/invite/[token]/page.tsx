@@ -76,11 +76,11 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Card className="w-full max-w-md border-slate-700 bg-slate-800/50">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <Card className="w-full max-w-md border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
-            <p className="mt-4 text-slate-400">Loading invite...</p>
+            <p className="mt-4 text-gray-400">Loading invite...</p>
           </CardContent>
         </Card>
       </div>
@@ -89,14 +89,14 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-slate-700 bg-slate-800/50">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <XCircle className="h-16 w-16 text-red-400 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">Invalid Invite</h2>
-            <p className="text-slate-400 text-center mb-6">{error}</p>
+            <p className="text-gray-400 text-center mb-6">{error}</p>
             <Link href="/login">
-              <Button variant="outline" className="border-slate-600 text-slate-300">
+              <Button variant="outline" className="border-white/10 text-gray-300">
                 Go to Login
               </Button>
             </Link>
@@ -108,12 +108,12 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
   if (accepted && acceptedTeam) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-slate-700 bg-slate-800/50">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <CheckCircle className="h-16 w-16 text-green-400 mb-4" />
+            <CheckCircle className="h-16 w-16 text-emerald-400 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">Welcome to {acceptedTeam.name}!</h2>
-            <p className="text-slate-400 text-center mb-6">
+            <p className="text-gray-400 text-center mb-6">
               You've successfully joined the team.
             </p>
             <Link href={`/team/${acceptedTeam.id}`}>
@@ -128,8 +128,8 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-slate-700 bg-slate-800/50">
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-white/5 bg-white/[0.02]">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-blue-500/10 rounded-full">
@@ -137,22 +137,22 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
             </div>
           </div>
           <CardTitle className="text-white">Team Invitation</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             You've been invited to join a team
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="bg-slate-900 rounded-lg p-4 space-y-3">
+          <div className="bg-[#0a0a0a] rounded-lg p-4 space-y-3">
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Team</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">Team</p>
               <p className="text-lg font-medium text-white">{invite?.teamName}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Role</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">Role</p>
               <p className="text-white capitalize">{invite?.role}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Invited Email</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">Invited Email</p>
               <p className="text-white">{invite?.email}</p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
                 'Accept Invitation'
               )}
             </Button>
-            <p className="text-xs text-slate-500 text-center">
+            <p className="text-xs text-gray-500 text-center">
               Make sure you're logged in with {invite?.email} to accept this invite.
             </p>
           </div>

@@ -72,16 +72,16 @@ export function CreateTeamButton({ variant = 'default' }: CreateTeamButtonProps)
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="bg-slate-800 border-slate-700">
+      <DialogContent className="bg-[#0a0a0a] border-white/5">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-white">Create a new team</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription className="text-gray-400">
               Create a team to share analytics with your colleagues. You&apos;ll be the team owner.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="name" className="text-slate-300">
+            <Label htmlFor="name" className="text-gray-300">
               Team name
             </Label>
             <Input

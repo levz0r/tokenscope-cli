@@ -82,7 +82,7 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="sticky top-14 h-[calc(100vh-3.5rem)] w-64 border-r border-slate-700 bg-slate-800/50">
+    <aside className="sticky top-14 h-[calc(100vh-3.5rem)] w-64 border-r border-white/5 bg-white/[0.02]">
       <nav className="flex flex-col h-full p-4">
         <div className="space-y-1">
           {navigation.map((item) => {
@@ -95,8 +95,8 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-blue-600/20 text-blue-400'
-                    : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                    ? 'bg-emerald-500/10 text-emerald-400'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -106,7 +106,7 @@ export function Sidebar() {
           })}
         </div>
 
-        <div className="mt-auto space-y-1 pt-4 border-t border-slate-700">
+        <div className="mt-auto space-y-1 pt-4 border-t border-white/5">
           {secondaryNavigation.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href)
             return (
@@ -116,8 +116,8 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-blue-600/20 text-blue-400'
-                    : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                    ? 'bg-emerald-500/10 text-emerald-400'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 )}
               >
                 <item.icon className="h-5 w-5" />

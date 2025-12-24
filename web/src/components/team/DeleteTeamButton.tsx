@@ -73,20 +73,20 @@ export function DeleteTeamButton({ teamId, teamName }: DeleteTeamButtonProps) {
           Delete Team
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-slate-800 border-slate-700">
+      <DialogContent className="bg-[#0a0a0a] border-white/5">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
             Delete Team
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-gray-400">
             This action cannot be undone. This will permanently delete the team
             <span className="font-semibold text-white"> {teamName}</span> and remove all
             associated data including sessions, analytics, and member associations.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <Label htmlFor="confirmName" className="text-slate-300">
+          <Label htmlFor="confirmName" className="text-gray-300">
             Type <span className="font-mono text-red-400">{teamName}</span> to confirm
           </Label>
           <Input
@@ -94,7 +94,7 @@ export function DeleteTeamButton({ teamId, teamName }: DeleteTeamButtonProps) {
             value={confirmName}
             onChange={(e) => setConfirmName(e.target.value)}
             placeholder="Enter team name"
-            className="mt-2 bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
+            className="mt-2 bg-[#0a0a0a] border-white/5 text-white placeholder:text-gray-500"
             disabled={loading}
             autoFocus
           />
@@ -107,7 +107,7 @@ export function DeleteTeamButton({ teamId, teamName }: DeleteTeamButtonProps) {
             type="button"
             variant="outline"
             onClick={() => setOpen(false)}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className="border-white/10 text-gray-300 hover:bg-white/10"
             disabled={loading}
           >
             Cancel

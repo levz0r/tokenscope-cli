@@ -25,8 +25,8 @@ export function HourlyChart({ data }: HourlyChartProps) {
   if (data.every(d => d.count === 0)) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-slate-400">No activity data yet</p>
-        <p className="text-sm text-slate-500">
+        <p className="text-gray-400">No activity data yet</p>
+        <p className="text-sm text-gray-500">
           Sync your analytics to see hourly patterns
         </p>
       </div>

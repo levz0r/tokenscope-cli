@@ -35,13 +35,15 @@ export default function LoginPage() {
   }, [supabase, router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      <Card className="w-full max-w-md border-slate-700 bg-slate-800/50">
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4 relative overflow-hidden">
+      {/* Background glow effects */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-950/30 rounded-full blur-[150px]" />
+      <Card className="w-full max-w-md border-white/5 bg-white/[0.02] relative z-10">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">
             Claude Code Analytics
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Sign in to view your analytics dashboard
           </CardDescription>
         </CardHeader>
@@ -53,14 +55,14 @@ export default function LoginPage() {
               variables: {
                 default: {
                   colors: {
-                    brand: '#3b82f6',
-                    brandAccent: '#2563eb',
-                    inputBackground: 'rgb(30, 41, 59)',
+                    brand: '#10b981',
+                    brandAccent: '#059669',
+                    inputBackground: 'rgba(255, 255, 255, 0.02)',
                     inputText: 'white',
-                    inputPlaceholder: 'rgb(148, 163, 184)',
-                    inputBorder: 'rgb(51, 65, 85)',
-                    inputBorderFocus: '#3b82f6',
-                    inputBorderHover: 'rgb(71, 85, 105)',
+                    inputPlaceholder: 'rgb(156, 163, 175)',
+                    inputBorder: 'rgba(255, 255, 255, 0.1)',
+                    inputBorderFocus: '#10b981',
+                    inputBorderHover: 'rgba(255, 255, 255, 0.15)',
                   },
                 },
               },

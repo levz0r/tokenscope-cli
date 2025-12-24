@@ -42,7 +42,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <Navbar user={user} profile={profile} />
       <div className="flex">
         <Sidebar />
@@ -50,28 +50,28 @@ export default async function SettingsPage() {
           <div className="space-y-6">
             <div>
               <h1 className="text-2xl font-bold text-white">Settings</h1>
-              <p className="text-slate-400">Manage your account and API access</p>
+              <p className="text-gray-400">Manage your account and API access</p>
             </div>
 
             <AccountSection user={user} name={profile?.name || null} />
 
             <ApiKeySection apiKey={profile?.api_key || ''} />
 
-            <Card className="border-slate-700 bg-slate-800/50">
+            <Card className="border-white/5 bg-white/[0.02]">
               <CardHeader>
                 <CardTitle className="text-white">CLI Setup</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-gray-400">
                   Connect your local Claude Code to this dashboard
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="rounded-lg bg-slate-900 p-4 font-mono text-sm">
-                  <p className="text-slate-400"># Install Claude Code Analytics</p>
-                  <p className="text-green-400">
+                <div className="rounded-lg bg-[#0a0a0a] p-4 font-mono text-sm">
+                  <p className="text-gray-400"># Install Claude Code Analytics</p>
+                  <p className="text-emerald-400">
                     curl -sSL https://raw.githubusercontent.com/levz0r/claude-code-analytics/main/install.sh | bash
                   </p>
-                  <p className="mt-4 text-slate-400"># Login with your API key</p>
-                  <p className="text-green-400">
+                  <p className="mt-4 text-gray-400"># Login with your API key</p>
+                  <p className="text-emerald-400">
                     cc-analytics login {profile?.api_key ? profile.api_key.slice(0, 10) + '...' : 'YOUR_API_KEY'}
                   </p>
                 </div>

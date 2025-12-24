@@ -60,20 +60,20 @@ export function DashboardCarousel() {
         <div className="flex">
           {slides.map((slide, index) => (
             <div key={index} className="flex-[0_0_100%] min-w-0">
-              <div className="border border-slate-700 bg-slate-900/50 shadow-2xl overflow-hidden rounded-xl mx-2">
+              <div className="border border-white/10 bg-white/[0.02] shadow-2xl overflow-hidden rounded-2xl mx-2 backdrop-blur-sm">
                 <div className="p-2">
                   <Image
                     src={slide.src}
                     alt={slide.alt}
                     width={1440}
                     height={900}
-                    className="rounded-lg w-full h-auto"
+                    className="rounded-xl w-full h-auto"
                     priority={index === 0}
                   />
                 </div>
                 <div className="px-4 pb-4 text-center">
                   <p className="text-lg font-medium text-white">{slide.title}</p>
-                  <p className="text-sm text-slate-400">{slide.description}</p>
+                  <p className="text-sm text-gray-500">{slide.description}</p>
                 </div>
               </div>
             </div>
@@ -90,8 +90,8 @@ export function DashboardCarousel() {
             className={cn(
               "w-2.5 h-2.5 rounded-full transition-all duration-300",
               selectedIndex === index
-                ? "bg-blue-500 w-8"
-                : "bg-slate-600 hover:bg-slate-500"
+                ? "bg-emerald-500 w-8"
+                : "bg-white/20 hover:bg-white/30"
             )}
             aria-label={`Go to slide ${index + 1}`}
           />

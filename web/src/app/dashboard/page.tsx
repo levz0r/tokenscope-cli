@@ -109,7 +109,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-slate-400">Your Claude Code analytics overview</p>
+        <p className="text-gray-500">Your Claude Code analytics overview</p>
       </div>
 
       <SummaryCards
@@ -124,10 +124,10 @@ export default async function DashboardPage() {
       />
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Tool Usage</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-500">
               Distribution of tool calls over the last 30 days
             </CardDescription>
           </CardHeader>
@@ -136,10 +136,10 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Recent Sessions</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-500">
               Your latest coding sessions
             </CardDescription>
           </CardHeader>

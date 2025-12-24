@@ -134,7 +134,7 @@ function getServerDisplayName(serverName: string): string {
 }
 
 function getServerColor(index: number): string {
-  const colors = ['text-blue-400', 'text-green-400', 'text-purple-400', 'text-orange-400', 'text-pink-400', 'text-cyan-400']
+  const colors = ['text-blue-400', 'text-emerald-400', 'text-purple-400', 'text-orange-400', 'text-pink-400', 'text-cyan-400']
   return colors[index % colors.length]
 }
 
@@ -150,13 +150,13 @@ export default async function MCPPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-white">MCP Usage</h1>
-          <p className="text-slate-400">Model Context Protocol integrations</p>
+          <p className="text-gray-400">Model Context Protocol integrations</p>
         </div>
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Plug className="h-16 w-16 text-slate-600 mb-4" />
+            <Plug className="h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No MCP Data Yet</h3>
-            <p className="text-slate-400 text-center max-w-md">
+            <p className="text-gray-400 text-center max-w-md">
               MCP tool usage will appear here once you start using MCP integrations
               like Linear, Context7, Playwright, and more.
             </p>
@@ -174,14 +174,14 @@ export default async function MCPPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">MCP Usage</h1>
-        <p className="text-slate-400">Model Context Protocol integrations</p>
+        <p className="text-gray-400">Model Context Protocol integrations</p>
       </div>
 
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Zap className="h-4 w-4" />
               Total MCP Calls
             </CardDescription>
@@ -191,21 +191,21 @@ export default async function MCPPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Server className="h-4 w-4" />
               MCP Servers
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-400">{stats.servers?.length || 0}</div>
+            <div className="text-2xl font-bold text-emerald-400">{stats.servers?.length || 0}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Plug className="h-4 w-4" />
               Unique Tools
             </CardDescription>
@@ -215,25 +215,25 @@ export default async function MCPPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <PieChart className="h-4 w-4" />
               MCP vs Native
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-400">{mcpPercentage}%</div>
-            <p className="text-xs text-slate-500">of all tool calls</p>
+            <p className="text-xs text-gray-500">of all tool calls</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Servers Breakdown */}
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">MCP Servers</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Usage breakdown by integration
           </CardDescription>
         </CardHeader>
@@ -250,11 +250,11 @@ export default async function MCPPage() {
                       <span className={`font-medium ${getServerColor(index)}`}>
                         {getServerDisplayName(server.server_name)}
                       </span>
-                      <span className="text-slate-400">
+                      <span className="text-gray-400">
                         {server.count.toLocaleString()} calls ({percentage}%)
                       </span>
                     </div>
-                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className={`h-full ${getServerColor(index).replace('text-', 'bg-')}`}
                         style={{ width: `${percentage}%` }}
@@ -265,16 +265,16 @@ export default async function MCPPage() {
               })}
             </div>
           ) : (
-            <p className="text-slate-400 text-center py-8">No MCP server usage recorded yet</p>
+            <p className="text-gray-400 text-center py-8">No MCP server usage recorded yet</p>
           )}
         </CardContent>
       </Card>
 
       {/* Top Tools */}
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Top MCP Tools</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Most frequently used MCP tools
           </CardDescription>
         </CardHeader>
@@ -288,20 +288,20 @@ export default async function MCPPage() {
                 return (
                   <div
                     key={tool.tool_name}
-                    className="flex items-center justify-between p-3 bg-slate-900 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-slate-500 w-6">{index + 1}.</span>
+                      <span className="text-gray-500 w-6">{index + 1}.</span>
                       <div>
                         <div className="font-medium text-white">{tool.short_name}</div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-gray-500">
                           {getServerDisplayName(tool.server)}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="font-medium text-white">{tool.count}</div>
-                      <div className={`text-xs ${successRate >= 90 ? 'text-green-400' : successRate >= 70 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      <div className={`text-xs ${successRate >= 90 ? 'text-emerald-400' : successRate >= 70 ? 'text-yellow-400' : 'text-red-400'}`}>
                         {successRate}% success
                       </div>
                     </div>
@@ -310,20 +310,20 @@ export default async function MCPPage() {
               })}
             </div>
           ) : (
-            <p className="text-slate-400 text-center py-8">No MCP tools used yet</p>
+            <p className="text-gray-400 text-center py-8">No MCP tools used yet</p>
           )}
         </CardContent>
       </Card>
 
       {/* Usage Trend */}
       {stats.daily_usage && stats.daily_usage.length > 0 && (
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               Daily MCP Usage
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Last 30 days
             </CardDescription>
           </CardHeader>

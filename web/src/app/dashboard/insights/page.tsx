@@ -185,7 +185,7 @@ function getExtensionColor(ext: string): string {
     tsx: 'bg-blue-400',
     js: 'bg-yellow-500',
     jsx: 'bg-yellow-400',
-    py: 'bg-green-500',
+    py: 'bg-emerald-500',
     go: 'bg-cyan-500',
     rs: 'bg-orange-500',
     java: 'bg-red-500',
@@ -194,9 +194,9 @@ function getExtensionColor(ext: string): string {
     json: 'bg-gray-500',
     md: 'bg-purple-500',
     sql: 'bg-blue-600',
-    sh: 'bg-green-600',
+    sh: 'bg-emerald-600',
   }
-  return colors[ext] || 'bg-slate-500'
+  return colors[ext] || 'bg-gray-500'
 }
 
 export default async function InsightsPage() {
@@ -213,27 +213,27 @@ export default async function InsightsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Insights</h1>
-        <p className="text-slate-400">Detailed analytics and patterns</p>
+        <p className="text-gray-400">Detailed analytics and patterns</p>
       </div>
 
       {/* Success Rate */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-400" />
+            <CardDescription className="text-gray-400 flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-emerald-400" />
               Success Rate
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-400">{insights.successRate}%</div>
-            <p className="text-xs text-slate-500">of tool calls succeeded</p>
+            <div className="text-3xl font-bold text-emerald-400">{insights.successRate}%</div>
+            <p className="text-xs text-gray-500">of tool calls succeeded</p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <CheckCircle className="h-4 w-4" />
               Successful Calls
             </CardDescription>
@@ -243,9 +243,9 @@ export default async function InsightsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <XCircle className="h-4 w-4 text-red-400" />
               Failed Calls
             </CardDescription>
@@ -258,13 +258,13 @@ export default async function InsightsPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* File Types */}
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <FileType className="h-5 w-5" />
               File Types
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Languages and file types modified
             </CardDescription>
           </CardHeader>
@@ -274,10 +274,10 @@ export default async function InsightsPage() {
                 {insights.fileTypes.map((ft) => (
                   <div key={ft.extension} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
-                      <span className={`text-white ${ft.extension === 'other' ? 'italic text-slate-400' : 'font-mono'}`}>{ft.extension === 'other' ? 'other' : `.${ft.extension}`}</span>
-                      <span className="text-slate-400">{ft.count} ({ft.percentage}%)</span>
+                      <span className={`text-white ${ft.extension === 'other' ? 'italic text-gray-400' : 'font-mono'}`}>{ft.extension === 'other' ? 'other' : `.${ft.extension}`}</span>
+                      <span className="text-gray-400">{ft.count} ({ft.percentage}%)</span>
                     </div>
-                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className={`h-full ${getExtensionColor(ft.extension)} rounded-full`}
                         style={{ width: `${ft.percentage}%` }}
@@ -287,19 +287,19 @@ export default async function InsightsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500 text-center py-8">No file data yet</p>
+              <p className="text-gray-500 text-center py-8">No file data yet</p>
             )}
           </CardContent>
         </Card>
 
         {/* Session Duration Distribution */}
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Clock className="h-5 w-5" />
               Session Lengths
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Distribution of session durations
             </CardDescription>
           </CardHeader>
@@ -312,9 +312,9 @@ export default async function InsightsPage() {
                   <div key={sd.range} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-white">{sd.range}</span>
-                      <span className="text-slate-400">{sd.count} sessions</span>
+                      <span className="text-gray-400">{sd.count} sessions</span>
                     </div>
-                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-purple-500 rounded-full"
                         style={{ width: `${percentage}%` }}
@@ -329,21 +329,21 @@ export default async function InsightsPage() {
       </div>
 
       {/* Code Churn */}
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
             Code Churn (Last 14 Days)
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Lines added vs removed over time
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <div className="flex items-center gap-4 text-xs text-slate-400 mb-4">
+            <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
               <span className="flex items-center gap-1">
-                <span className="w-3 h-3 bg-green-500 rounded" />
+                <span className="w-3 h-3 bg-emerald-500 rounded" />
                 Added
               </span>
               <span className="flex items-center gap-1">
@@ -355,7 +355,7 @@ export default async function InsightsPage() {
               {insights.codeChurn.map((day) => (
                 <div key={day.date} className="flex-1 flex flex-col gap-0.5">
                   <div
-                    className="bg-green-500 rounded-t w-full"
+                    className="bg-emerald-500 rounded-t w-full"
                     style={{ height: `${(day.added / maxChurn) * 60}px` }}
                     title={`${day.date}: +${day.added} lines`}
                   />
@@ -367,7 +367,7 @@ export default async function InsightsPage() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between text-xs text-slate-500 mt-2">
+            <div className="flex justify-between text-xs text-gray-500 mt-2">
               <span>{insights.codeChurn[0]?.date.slice(5)}</span>
               <span>{insights.codeChurn[insights.codeChurn.length - 1]?.date.slice(5)}</span>
             </div>
@@ -376,13 +376,13 @@ export default async function InsightsPage() {
       </Card>
 
       {/* Directory Activity */}
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <FolderTree className="h-5 w-5" />
             Directory Activity
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Most active directories in your codebase
           </CardDescription>
         </CardHeader>
@@ -391,15 +391,15 @@ export default async function InsightsPage() {
             <div className="space-y-3">
               {insights.directoryActivity.map((dir, index) => (
                 <div key={dir.directory} className="flex items-center gap-3">
-                  <span className="text-slate-500 w-6 text-right">{index + 1}.</span>
+                  <span className="text-gray-500 w-6 text-right">{index + 1}.</span>
                   <div className="flex-1">
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-white font-mono truncate max-w-[200px]" title={dir.directory}>
                         {dir.directory}
                       </span>
-                      <span className="text-slate-400">{dir.count} changes ({dir.percentage}%)</span>
+                      <span className="text-gray-400">{dir.count} changes ({dir.percentage}%)</span>
                     </div>
-                    <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full"
                         style={{ width: `${dir.percentage}%` }}
@@ -410,7 +410,7 @@ export default async function InsightsPage() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-500 text-center py-8">No directory data yet</p>
+            <p className="text-gray-500 text-center py-8">No directory data yet</p>
           )}
         </CardContent>
       </Card>

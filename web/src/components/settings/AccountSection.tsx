@@ -45,44 +45,44 @@ export function AccountSection({ user, name: initialName }: AccountSectionProps)
   }
 
   return (
-    <Card className="border-slate-700 bg-slate-800/50">
+    <Card className="border-white/5 bg-white/[0.02]">
       <CardHeader>
         <CardTitle className="text-white">Account</CardTitle>
-        <CardDescription className="text-slate-400">
+        <CardDescription className="text-gray-400">
           Your account information
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarFallback className="bg-slate-600 text-white text-xl">
+            <AvatarFallback className="bg-white/15 text-white text-xl">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div>
             <p className="text-lg font-medium text-white">{name || user.email?.split('@')[0]}</p>
-            <p className="text-sm text-slate-400">{user.email}</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-gray-400">{user.email}</p>
+            <p className="text-xs text-gray-500">
               Member since {format(new Date(user.created_at), 'MMMM d, yyyy')}
             </p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="name" className="text-slate-300">Display Name</Label>
+          <Label htmlFor="name" className="text-gray-300">Display Name</Label>
           <div className="flex gap-2">
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter your name"
-              className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
+              className="bg-[#0a0a0a] border-white/5 text-white placeholder:text-gray-500"
             />
             <Button
               variant="outline"
               onClick={handleSave}
               disabled={isSaving || name === initialName}
-              className="border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white"
+              className="border-white/10 bg-white/10/50 hover:bg-white/15 text-white"
             >
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

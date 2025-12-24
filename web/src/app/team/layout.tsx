@@ -26,7 +26,7 @@ export default async function TeamLayout({
     .single()
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <Navbar user={user} profile={profile} />
       <div className="flex">
         <Sidebar />

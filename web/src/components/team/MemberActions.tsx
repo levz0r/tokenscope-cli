@@ -68,7 +68,7 @@ export function MemberActions({ memberId, memberRole, teamId, currentUserRole }:
       <Button
         variant="ghost"
         size="sm"
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
         onClick={() => setOpen(!open)}
         disabled={loading}
       >
@@ -85,13 +85,13 @@ export function MemberActions({ memberId, memberRole, teamId, currentUserRole }:
             className="fixed inset-0 z-10"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 mt-1 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-20 py-1">
+          <div className="absolute right-0 mt-1 w-48 bg-[#0a0a0a] border border-white/5 rounded-lg shadow-lg z-20 py-1">
             {canChangeRole && (
               <>
                 {memberRole === 'member' ? (
                   <button
                     onClick={() => handleRoleChange('admin')}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-left text-slate-300 hover:bg-slate-700"
+                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/10"
                   >
                     <Shield className="h-4 w-4 text-blue-400" />
                     Make Admin
@@ -99,9 +99,9 @@ export function MemberActions({ memberId, memberRole, teamId, currentUserRole }:
                 ) : (
                   <button
                     onClick={() => handleRoleChange('member')}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-left text-slate-300 hover:bg-slate-700"
+                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/10"
                   >
-                    <User className="h-4 w-4 text-slate-400" />
+                    <User className="h-4 w-4 text-gray-400" />
                     Make Member
                   </button>
                 )}
@@ -110,7 +110,7 @@ export function MemberActions({ memberId, memberRole, teamId, currentUserRole }:
             {canRemove && (
               <button
                 onClick={handleRemove}
-                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-slate-700"
+                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-white/10"
               >
                 <UserMinus className="h-4 w-4" />
                 Remove from Team

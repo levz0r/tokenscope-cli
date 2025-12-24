@@ -79,13 +79,13 @@ export default async function FilesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Files</h1>
-        <p className="text-slate-400">File modification analytics</p>
+        <p className="text-gray-400">File modification analytics</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <FolderTree className="h-4 w-4" />
               Unique Files
             </CardDescription>
@@ -95,9 +95,9 @@ export default async function FilesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <FileCode className="h-4 w-4" />
               Total Operations
             </CardDescription>
@@ -107,21 +107,21 @@ export default async function FilesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <FilePlus className="h-4 w-4" />
               Lines Added
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-400">+{stats.added.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-emerald-400">+{stats.added.toLocaleString()}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <FileMinus className="h-4 w-4" />
               Lines Removed
             </CardDescription>
@@ -132,10 +132,10 @@ export default async function FilesPage() {
         </Card>
       </div>
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Most Modified Files</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Files ranked by number of modifications
           </CardDescription>
         </CardHeader>

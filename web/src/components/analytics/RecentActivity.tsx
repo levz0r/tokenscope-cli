@@ -18,7 +18,7 @@ interface RecentActivityProps {
 export function RecentActivity({ sessions }: RecentActivityProps) {
   if (sessions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-[200px] text-slate-500">
+      <div className="flex flex-col items-center justify-center h-[200px] text-gray-500">
         <Activity className="h-8 w-8 mb-2" />
         <p>No sessions yet</p>
         <p className="text-sm">Sync your analytics to see activity here</p>
@@ -38,30 +38,30 @@ export function RecentActivity({ sessions }: RecentActivityProps) {
         return (
           <div
             key={session.id}
-            className="flex items-start gap-4 p-3 rounded-lg bg-slate-700/30"
+            className="flex items-start gap-4 p-3 rounded-lg bg-white/[0.03]"
           >
             <div className="mt-1">
-              <Activity className="h-4 w-4 text-blue-400" />
+              <Activity className="h-4 w-4 text-emerald-400" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">
                 {session.project_name || 'Unknown Project'}
               </p>
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2 text-xs text-gray-500">
                 <Clock className="h-3 w-3" />
                 <span>
                   {formatDistanceToNow(startTime, { addSuffix: true })}
                 </span>
                 {duration !== null && (
                   <>
-                    <span className="text-slate-600">·</span>
+                    <span className="text-gray-700">·</span>
                     <span>{duration} min</span>
                   </>
                 )}
               </div>
             </div>
             {!endTime && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/20 text-green-400">
+              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400">
                 Active
               </span>
             )}

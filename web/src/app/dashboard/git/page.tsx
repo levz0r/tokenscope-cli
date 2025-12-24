@@ -86,25 +86,25 @@ export default async function GitPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Git Operations</h1>
-        <p className="text-slate-400">Your version control activity</p>
+        <p className="text-gray-400">Your version control activity</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <GitCommit className="h-4 w-4" />
               Commits
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-400">{stats.commits}</div>
+            <div className="text-2xl font-bold text-emerald-400">{stats.commits}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <GitPullRequest className="h-4 w-4" />
               Pushes
             </CardDescription>
@@ -114,9 +114,9 @@ export default async function GitPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <GitBranch className="h-4 w-4" />
               Branches
             </CardDescription>
@@ -126,9 +126,9 @@ export default async function GitPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <GitMerge className="h-4 w-4" />
               Merges
             </CardDescription>
@@ -138,24 +138,24 @@ export default async function GitPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <GitBranch className="h-4 w-4" />
               Other
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-400">{stats.other}</div>
-            <p className="text-xs text-slate-500">add, diff, status, etc.</p>
+            <div className="text-2xl font-bold text-gray-400">{stats.other}</div>
+            <p className="text-xs text-gray-500">add, diff, status, etc.</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Recent Git Operations</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Your version control activity history
           </CardDescription>
         </CardHeader>

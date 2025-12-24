@@ -203,13 +203,13 @@ export default async function ProjectsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Projects</h1>
-          <p className="text-slate-400">Analytics by project</p>
+          <p className="text-gray-400">Analytics by project</p>
         </div>
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FolderKanban className="h-16 w-16 text-slate-600 mb-4" />
+            <FolderKanban className="h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No Project Data Yet</h3>
-            <p className="text-slate-400 text-center max-w-md">
+            <p className="text-gray-400 text-center max-w-md">
               Project analytics will appear here once you sync sessions from Claude Code.
               Projects are detected from the directory you run Claude Code in.
             </p>
@@ -223,13 +223,13 @@ export default async function ProjectsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Projects</h1>
-        <p className="text-slate-400">Analytics by project</p>
+        <p className="text-gray-400">Analytics by project</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <FolderKanban className="h-4 w-4" />
               Total Projects
             </CardDescription>
@@ -239,9 +239,9 @@ export default async function ProjectsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Terminal className="h-4 w-4" />
               Total Sessions
             </CardDescription>
@@ -251,23 +251,23 @@ export default async function ProjectsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Avg Sessions/Project
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-400">{stats.avgSessionsPerProject}</div>
+            <div className="text-2xl font-bold text-emerald-400">{stats.avgSessionsPerProject}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">All Projects</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             Your coding activity by project
           </CardDescription>
         </CardHeader>
@@ -276,60 +276,60 @@ export default async function ProjectsPage() {
             {projects.map((project) => (
               <div
                 key={project.name}
-                className="p-4 bg-slate-900 rounded-lg"
+                className="p-4 bg-[#0a0a0a] rounded-lg"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <FolderKanban className="h-5 w-5 text-blue-400" />
                     <div>
                       <h3 className="font-medium text-white">{project.name}</h3>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-gray-500">
                         Last active {formatDistanceToNow(new Date(project.lastActive), { addSuffix: true })}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-white">{formatDuration(project.totalMinutes)}</div>
-                    <p className="text-xs text-slate-500">total time</p>
+                    <p className="text-xs text-gray-500">total time</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  <div className="bg-slate-800 rounded px-3 py-2">
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
+                  <div className="bg-[#0a0a0a] rounded px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
                       <Terminal className="h-3 w-3" />
                       Sessions
                     </div>
                     <div className="text-sm font-medium text-white">{project.sessions}</div>
                   </div>
 
-                  <div className="bg-slate-800 rounded px-3 py-2">
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
+                  <div className="bg-[#0a0a0a] rounded px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
                       <FileCode className="h-3 w-3" />
                       Tool Uses
                     </div>
                     <div className="text-sm font-medium text-white">{project.toolUses.toLocaleString()}</div>
                   </div>
 
-                  <div className="bg-slate-800 rounded px-3 py-2">
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
+                  <div className="bg-[#0a0a0a] rounded px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
                       <FileCode className="h-3 w-3" />
                       Files Changed
                     </div>
                     <div className="text-sm font-medium text-white">{project.fileChanges}</div>
                   </div>
 
-                  <div className="bg-slate-800 rounded px-3 py-2">
-                    <div className="text-xs text-slate-400 mb-1">Lines</div>
+                  <div className="bg-[#0a0a0a] rounded px-3 py-2">
+                    <div className="text-xs text-gray-400 mb-1">Lines</div>
                     <div className="text-sm font-medium">
-                      <span className="text-green-400">+{project.linesAdded.toLocaleString()}</span>
+                      <span className="text-emerald-400">+{project.linesAdded.toLocaleString()}</span>
                       {' / '}
                       <span className="text-red-400">-{project.linesRemoved.toLocaleString()}</span>
                     </div>
                   </div>
 
-                  <div className="bg-slate-800 rounded px-3 py-2">
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
+                  <div className="bg-[#0a0a0a] rounded px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
                       <GitCommit className="h-3 w-3" />
                       Git Ops
                     </div>

@@ -34,7 +34,7 @@ const columns: ColumnDef<Session>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <Folder className="mr-2 h-4 w-4" />
         Project
@@ -43,7 +43,7 @@ const columns: ColumnDef<Session>[] = [
     ),
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Folder className="h-4 w-4 text-slate-500" />
+        <Folder className="h-4 w-4 text-gray-500" />
         <span className="text-white font-medium">
           {row.getValue('project_name') || 'Unknown'}
         </span>
@@ -56,7 +56,7 @@ const columns: ColumnDef<Session>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <Clock className="mr-2 h-4 w-4" />
         Started
@@ -66,9 +66,9 @@ const columns: ColumnDef<Session>[] = [
     cell: ({ row }) => {
       const startTime = row.getValue('start_time') as string
       return (
-        <div className="text-slate-300">
+        <div className="text-gray-300">
           <div>{format(new Date(startTime), 'MMM d, yyyy')}</div>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-gray-500">
             {formatDistanceToNow(new Date(startTime), { addSuffix: true })}
           </div>
         </div>
@@ -86,9 +86,9 @@ const columns: ColumnDef<Session>[] = [
       const hours = Math.floor(minutes / 60)
 
       if (hours > 0) {
-        return <span className="text-slate-300">{hours}h {minutes % 60}m</span>
+        return <span className="text-gray-300">{hours}h {minutes % 60}m</span>
       }
-      return <span className="text-slate-300">{minutes}m</span>
+      return <span className="text-gray-300">{minutes}m</span>
     },
   },
   {
@@ -97,7 +97,7 @@ const columns: ColumnDef<Session>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <Terminal className="mr-2 h-4 w-4" />
         Tools
@@ -125,7 +125,7 @@ const columns: ColumnDef<Session>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <FileCode className="mr-2 h-4 w-4" />
         Files
@@ -136,7 +136,7 @@ const columns: ColumnDef<Session>[] = [
       const count = row.original.file_changes?.[0]?.count || 0
       return (
         <div className="flex items-center gap-2">
-          <FileCode className="h-4 w-4 text-green-400" />
+          <FileCode className="h-4 w-4 text-emerald-400" />
           <span className="text-white">{count}</span>
         </div>
       )
@@ -153,7 +153,7 @@ const columns: ColumnDef<Session>[] = [
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        className="text-slate-400 hover:text-white"
+        className="text-gray-400 hover:text-white"
       >
         <GitBranch className="mr-2 h-4 w-4" />
         Git
@@ -184,8 +184,8 @@ const columns: ColumnDef<Session>[] = [
         <span
           className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
             isActive
-              ? 'bg-green-500/10 text-green-400'
-              : 'bg-slate-500/10 text-slate-400'
+              ? 'bg-emerald-500/10 text-emerald-400'
+              : 'bg-gray-500/10 text-gray-400'
           }`}
         >
           {isActive ? 'Active' : 'Completed'}
@@ -218,9 +218,9 @@ export function SessionsTable({ sessions }: SessionsTableProps) {
   if (sessions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Clock className="h-12 w-12 text-slate-600 mb-4" />
-        <p className="text-slate-400">No sessions yet</p>
-        <p className="text-sm text-slate-500">
+        <Clock className="h-12 w-12 text-gray-600 mb-4" />
+        <p className="text-gray-400">No sessions yet</p>
+        <p className="text-sm text-gray-500">
           Sync your analytics to see session history
         </p>
       </div>
@@ -228,13 +228,13 @@ export function SessionsTable({ sessions }: SessionsTableProps) {
   }
 
   return (
-    <div className="rounded-md border border-slate-700">
+    <div className="rounded-md border border-white/5">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-slate-700 hover:bg-transparent">
+            <TableRow key={headerGroup.id} className="border-white/5 hover:bg-transparent">
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="text-slate-400">
+                <TableHead key={header.id} className="text-gray-400">
                   {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
@@ -247,7 +247,7 @@ export function SessionsTable({ sessions }: SessionsTableProps) {
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className="border-slate-700 hover:bg-slate-800/50"
+              className="border-white/5 hover:bg-white/[0.02]"
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>

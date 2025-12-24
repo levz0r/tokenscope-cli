@@ -16,20 +16,20 @@ interface ToolUsageChartProps {
 }
 
 const COLORS = [
-  '#3b82f6', // blue
-  '#22c55e', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#84cc16', // lime
+  '#10b981', // emerald-500
+  '#34d399', // emerald-400
+  '#6ee7b7', // emerald-300
+  '#a7f3d0', // emerald-200
+  '#059669', // emerald-600
+  '#047857', // emerald-700
+  '#065f46', // emerald-800
+  '#064e3b', // emerald-900
 ]
 
 export function ToolUsageChart({ data }: ToolUsageChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-slate-500">
+      <div className="flex items-center justify-center h-[300px] text-gray-500">
         No tool usage data yet. Sync your analytics to see data here.
       </div>
     )
@@ -38,24 +38,24 @@ export function ToolUsageChart({ data }: ToolUsageChartProps) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
-        <XAxis type="number" stroke="#64748b" fontSize={12} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+        <XAxis type="number" stroke="#6b7280" fontSize={12} />
         <YAxis
           type="category"
           dataKey="name"
-          stroke="#64748b"
+          stroke="#6b7280"
           fontSize={12}
           width={100}
           tickFormatter={(value) => value.length > 12 ? `${value.slice(0, 12)}...` : value}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: '#1e293b',
-            border: '1px solid #334155',
+            backgroundColor: '#111',
+            border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: '8px',
           }}
-          labelStyle={{ color: '#f1f5f9' }}
-          itemStyle={{ color: '#94a3b8' }}
+          labelStyle={{ color: '#fff' }}
+          itemStyle={{ color: '#10b981' }}
         />
         <Bar dataKey="count" radius={[0, 4, 4, 0]}>
           {data.map((_, index) => (

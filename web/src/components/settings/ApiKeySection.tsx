@@ -47,10 +47,10 @@ export function ApiKeySection({ apiKey }: ApiKeySectionProps) {
     : 'No API key found'
 
   return (
-    <Card id="api-key" className="border-slate-700 bg-slate-800/50">
+    <Card id="api-key" className="border-white/5 bg-white/[0.02]">
       <CardHeader>
         <CardTitle className="text-white">API Key</CardTitle>
-        <CardDescription className="text-slate-400">
+        <CardDescription className="text-gray-400">
           Use this key to sync your local analytics with the cloud
         </CardDescription>
       </CardHeader>
@@ -61,40 +61,40 @@ export function ApiKeySection({ apiKey }: ApiKeySectionProps) {
               type="text"
               value={showKey ? apiKey : maskedKey}
               readOnly
-              className="bg-slate-900 border-slate-700 text-slate-300 font-mono pr-20"
+              className="bg-[#0a0a0a] border-white/5 text-gray-300 font-mono pr-20"
             />
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 hover:bg-slate-700"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 hover:bg-white/10"
               onClick={() => setShowKey(!showKey)}
             >
               {showKey ? (
-                <EyeOff className="h-4 w-4 text-slate-400" />
+                <EyeOff className="h-4 w-4 text-gray-400" />
               ) : (
-                <Eye className="h-4 w-4 text-slate-400" />
+                <Eye className="h-4 w-4 text-gray-400" />
               )}
             </Button>
           </div>
           <Button
             variant="outline"
             size="icon"
-            className="border-slate-600 bg-slate-700/50 hover:bg-slate-600"
+            className="border-white/10 bg-white/10/50 hover:bg-white/15"
             onClick={handleCopy}
           >
-            <Copy className={`h-4 w-4 ${copied ? 'text-green-400' : 'text-white'}`} />
+            <Copy className={`h-4 w-4 ${copied ? 'text-emerald-400' : 'text-white'}`} />
           </Button>
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-gray-500">
             Keep this key secret. Do not share it or commit it to version control.
           </p>
           <Button
             variant="outline"
             size="sm"
-            className="border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white"
+            className="border-white/10 bg-white/10/50 hover:bg-white/15 text-white"
             onClick={handleRegenerate}
             disabled={isRegenerating}
           >

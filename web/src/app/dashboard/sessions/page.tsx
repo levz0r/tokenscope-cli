@@ -54,31 +54,31 @@ export default async function SessionsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Sessions</h1>
-        <p className="text-slate-400">Your Claude Code session history</p>
+        <p className="text-gray-500">Your Claude Code session history</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400">Total Sessions</CardDescription>
+            <CardDescription className="text-gray-400">Total Sessions</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">{totalSessions}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400">Active Sessions</CardDescription>
+            <CardDescription className="text-gray-400">Active Sessions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-400">{activeSessions}</div>
+            <div className="text-2xl font-bold text-emerald-400">{activeSessions}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400">Avg Tools/Session</CardDescription>
+            <CardDescription className="text-gray-400">Avg Tools/Session</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">{avgToolsPerSession}</div>
@@ -86,10 +86,10 @@ export default async function SessionsPage() {
         </Card>
       </div>
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Session History</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-500">
             All your coding sessions with Claude Code
           </CardDescription>
         </CardHeader>

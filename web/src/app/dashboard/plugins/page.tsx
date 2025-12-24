@@ -168,14 +168,14 @@ async function getPluginStats(
 function getAgentColor(agentType: string): string {
   const colors: Record<string, string> = {
     'Explore': 'text-blue-400',
-    'Plan': 'text-green-400',
+    'Plan': 'text-emerald-400',
     'code-architect': 'text-purple-400',
     'bug-diagnostician': 'text-red-400',
     'security-auditor': 'text-orange-400',
     'github-cli-expert': 'text-cyan-400',
-    'general-purpose': 'text-slate-400',
+    'general-purpose': 'text-gray-400',
   }
-  return colors[agentType] || 'text-slate-400'
+  return colors[agentType] || 'text-gray-400'
 }
 
 export default async function PluginsPage() {
@@ -190,13 +190,13 @@ export default async function PluginsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Plugins & Agents</h1>
-          <p className="text-slate-400">Skills, agents, and plugin ecosystem usage</p>
+          <p className="text-gray-400">Skills, agents, and plugin ecosystem usage</p>
         </div>
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Puzzle className="h-16 w-16 text-slate-600 mb-4" />
+            <Puzzle className="h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No Plugin Data Yet</h3>
-            <p className="text-slate-400 text-center max-w-md">
+            <p className="text-gray-400 text-center max-w-md">
               Plugin usage data will appear here once you start using skills (slash commands),
               agents, or install Claude Code plugins.
             </p>
@@ -210,40 +210,40 @@ export default async function PluginsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Plugins & Agents</h1>
-        <p className="text-slate-400">Skills, agents, and plugin ecosystem usage</p>
+        <p className="text-gray-400">Skills, agents, and plugin ecosystem usage</p>
       </div>
 
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Zap className="h-4 w-4" />
               Skill Invocations
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-400">{stats.total_skill_uses.toLocaleString()}</div>
-            <p className="text-xs text-slate-500">last 30 days</p>
+            <p className="text-xs text-gray-500">last 30 days</p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Bot className="h-4 w-4" />
               Agent Spawns
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-400">{stats.total_agent_spawns.toLocaleString()}</div>
-            <p className="text-xs text-slate-500">last 30 days</p>
+            <div className="text-2xl font-bold text-emerald-400">{stats.total_agent_spawns.toLocaleString()}</div>
+            <p className="text-xs text-gray-500">last 30 days</p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <Package className="h-4 w-4" />
               Installed Plugins
             </CardDescription>
@@ -253,9 +253,9 @@ export default async function PluginsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-400 flex items-center gap-2">
+            <CardDescription className="text-gray-400 flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Unique Skills
             </CardDescription>
@@ -268,10 +268,10 @@ export default async function PluginsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Top Skills */}
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Top Skills</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Most frequently used slash commands
             </CardDescription>
           </CardHeader>
@@ -281,14 +281,14 @@ export default async function PluginsPage() {
                 {stats.top_skills.slice(0, 10).map((skill, index) => (
                   <div
                     key={`${skill.plugin_name || ''}:${skill.skill_name}`}
-                    className="flex items-center justify-between p-3 bg-slate-900 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-slate-500 w-6">{index + 1}.</span>
+                      <span className="text-gray-500 w-6">{index + 1}.</span>
                       <div>
                         <div className="font-medium text-white">/{skill.skill_name}</div>
                         {skill.plugin_name && (
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-gray-500">
                             {skill.plugin_name}
                           </div>
                         )}
@@ -299,16 +299,16 @@ export default async function PluginsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-slate-400 text-center py-8">No skill usage recorded yet</p>
+              <p className="text-gray-400 text-center py-8">No skill usage recorded yet</p>
             )}
           </CardContent>
         </Card>
 
         {/* Top Agents */}
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Top Agents</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Most frequently spawned subagents
             </CardDescription>
           </CardHeader>
@@ -322,16 +322,16 @@ export default async function PluginsPage() {
                   return (
                     <div
                       key={agent.agent_type}
-                      className="flex items-center justify-between p-3 bg-slate-900 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-500 w-6">{index + 1}.</span>
+                        <span className="text-gray-500 w-6">{index + 1}.</span>
                         <div>
                           <div className={`font-medium ${getAgentColor(agent.agent_type)}`}>
                             {agent.agent_type}
                           </div>
                           {agent.background_count > 0 && (
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-gray-500">
                               {bgPercent}% background
                             </div>
                           )}
@@ -343,7 +343,7 @@ export default async function PluginsPage() {
                 })}
               </div>
             ) : (
-              <p className="text-slate-400 text-center py-8">No agent spawns recorded yet</p>
+              <p className="text-gray-400 text-center py-8">No agent spawns recorded yet</p>
             )}
           </CardContent>
         </Card>
@@ -351,10 +351,10 @@ export default async function PluginsPage() {
 
       {/* Installed Plugins */}
       {stats.installed_plugins.length > 0 && (
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white">Installed Plugins</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Plugins detected in your Claude Code environment
             </CardDescription>
           </CardHeader>
@@ -363,12 +363,12 @@ export default async function PluginsPage() {
               {stats.installed_plugins.map((plugin) => (
                 <div
                   key={`${plugin.plugin_name}:${plugin.plugin_source}`}
-                  className="flex items-center justify-between p-4 bg-slate-900 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg"
                 >
                   <div>
                     <div className="font-medium text-white">{plugin.plugin_name}</div>
                     {plugin.plugin_source && (
-                      <div className="text-xs text-slate-500">{plugin.plugin_source}</div>
+                      <div className="text-xs text-gray-500">{plugin.plugin_source}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -378,7 +378,7 @@ export default async function PluginsPage() {
                       </span>
                     )}
                     {plugin.has_agents && (
-                      <span className="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded">
+                      <span className="px-2 py-1 text-xs bg-emerald-500/20 text-emerald-400 rounded">
                         Agents
                       </span>
                     )}
@@ -402,13 +402,13 @@ export default async function PluginsPage() {
 
       {/* Usage Trend */}
       {stats.daily_usage.some(d => d.skills > 0 || d.agents > 0) && (
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               Daily Activity
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-gray-400">
               Skills and agent usage over the last 30 days
             </CardDescription>
           </CardHeader>
@@ -427,7 +427,7 @@ export default async function PluginsPage() {
                     title={`${day.date}: ${day.skills} skills, ${day.agents} agents`}
                   >
                     <div
-                      className="bg-green-500 opacity-70 hover:opacity-100 transition-opacity"
+                      className="bg-emerald-500 opacity-70 hover:opacity-100 transition-opacity"
                       style={{ height: `${100 - skillPercent}%` }}
                     />
                     <div
@@ -441,11 +441,11 @@ export default async function PluginsPage() {
             <div className="flex justify-center gap-6 mt-4 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded" />
-                <span className="text-slate-400">Skills</span>
+                <span className="text-gray-400">Skills</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded" />
-                <span className="text-slate-400">Agents</span>
+                <div className="w-3 h-3 bg-emerald-500 rounded" />
+                <span className="text-gray-400">Agents</span>
               </div>
             </div>
           </CardContent>

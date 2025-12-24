@@ -92,17 +92,17 @@ export default async function TeamPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Team</h1>
-          <p className="text-slate-400">Manage your team and view aggregated analytics</p>
+          <p className="text-gray-400">Manage your team and view aggregated analytics</p>
         </div>
         <CreateTeamButton />
       </div>
 
       {teams.length === 0 ? (
-        <Card className="border-slate-700 bg-slate-800/50">
+        <Card className="border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Building2 className="h-16 w-16 text-slate-600 mb-4" />
+            <Building2 className="h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No Team Yet</h3>
-            <p className="text-slate-400 text-center max-w-md mb-6">
+            <p className="text-gray-400 text-center max-w-md mb-6">
               Create a team to share analytics with your colleagues and managers.
               Team members can view aggregated statistics across all members.
             </p>
@@ -112,7 +112,7 @@ export default async function TeamPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {teams.map((team) => (
-            <Card key={team.id} className="border-slate-700 bg-slate-800/50 hover:border-slate-600 transition-colors">
+            <Card key={team.id} className="border-white/5 bg-white/[0.02] hover:border-white/10 transition-colors">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white flex items-center gap-2">
@@ -126,30 +126,30 @@ export default async function TeamPage() {
                     </span>
                   )}
                 </div>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-gray-400">
                   Created {new Date(team.created_at).toLocaleDateString()}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="text-center p-3 bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 bg-[#0a0a0a] rounded-lg">
                     <div className="text-2xl font-bold text-white">{team.memberCount}</div>
-                    <div className="text-xs text-slate-400">Members</div>
+                    <div className="text-xs text-gray-400">Members</div>
                   </div>
-                  <div className="text-center p-3 bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 bg-[#0a0a0a] rounded-lg">
                     <div className="text-2xl font-bold text-white">{team.sessionCount}</div>
-                    <div className="text-xs text-slate-400">Sessions</div>
+                    <div className="text-xs text-gray-400">Sessions</div>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <Link href={`/team/${team.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white">
+                    <Button variant="outline" className="w-full border-white/10 bg-white/10/50 hover:bg-white/15 text-white">
                       View Dashboard
                     </Button>
                   </Link>
                   {(team.role === 'owner' || team.role === 'admin') && (
                     <Link href="/team/members">
-                      <Button variant="outline" className="border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white">
+                      <Button variant="outline" className="border-white/10 bg-white/10/50 hover:bg-white/15 text-white">
                         <Users className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -161,10 +161,10 @@ export default async function TeamPage() {
         </div>
       )}
 
-      <Card className="border-slate-700 bg-slate-800/50">
+      <Card className="border-white/5 bg-white/[0.02]">
         <CardHeader>
           <CardTitle className="text-white">Team Features</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-gray-400">
             What you get with a team subscription
           </CardDescription>
         </CardHeader>
@@ -176,18 +176,18 @@ export default async function TeamPage() {
               </div>
               <div>
                 <h4 className="font-medium text-white">Team Analytics</h4>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-gray-400">
                   View aggregated stats across all team members
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <Building2 className="h-5 w-5 text-green-400" />
+              <div className="p-2 bg-emerald-500/10 rounded-lg">
+                <Building2 className="h-5 w-5 text-emerald-400" />
               </div>
               <div>
                 <h4 className="font-medium text-white">Project Insights</h4>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-gray-400">
                   Track productivity across team projects
                 </p>
               </div>
@@ -198,7 +198,7 @@ export default async function TeamPage() {
               </div>
               <div>
                 <h4 className="font-medium text-white">Admin Controls</h4>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-gray-400">
                   Manage members and permissions
                 </p>
               </div>
