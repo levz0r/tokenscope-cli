@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Mail, Loader2, CheckCircle, Copy } from 'lucide-react'
+import { buttonStyles } from '@/lib/styles'
 
 interface InviteMemberFormProps {
   teamId: string
@@ -73,7 +74,7 @@ export function InviteMemberForm({ teamId }: InviteMemberFormProps) {
           <option value="member">Member</option>
           <option value="admin">Admin</option>
         </select>
-        <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+        <Button type="submit" disabled={loading} variant="outline" className={buttonStyles.primary}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -109,7 +110,7 @@ export function InviteMemberForm({ teamId }: InviteMemberFormProps) {
               type="button"
               variant="outline"
               onClick={copyInviteUrl}
-              className="border-slate-600"
+              className={buttonStyles.primary}
             >
               {copied ? (
                 <CheckCircle className="h-4 w-4 text-green-400" />

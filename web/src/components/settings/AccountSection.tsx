@@ -1,19 +1,48 @@
 'use client'
 
+import { useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { format } from 'date-fns'
+import { Check, Loader2 } from 'lucide-react'
 
 interface AccountSectionProps {
   user: User
+  name: string | null
 }
 
-export function AccountSection({ user }: AccountSectionProps) {
-  const initials = user.email
-    ?.split('@')[0]
+export function AccountSection({ user, name: initialName }: AccountSectionProps) {
+  const [name, setName] = useState(initialName || '')
+  const [isSaving, setIsSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const initials = (name || user.email?.split('@')[0] || 'U')
     .slice(0, 2)
-    .toUpperCase() || 'U'
+    .toUpperCase()
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/auth/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+
+      if (response.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      }
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <Card className="border-slate-700 bg-slate-800/50">
@@ -23,7 +52,7 @@ export function AccountSection({ user }: AccountSectionProps) {
           Your account information
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarFallback className="bg-slate-600 text-white text-xl">
@@ -31,10 +60,38 @@ export function AccountSection({ user }: AccountSectionProps) {
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="text-lg font-medium text-white">{user.email}</p>
-            <p className="text-sm text-slate-400">
+            <p className="text-lg font-medium text-white">{name || user.email?.split('@')[0]}</p>
+            <p className="text-sm text-slate-400">{user.email}</p>
+            <p className="text-xs text-slate-500">
               Member since {format(new Date(user.created_at), 'MMMM d, yyyy')}
             </p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-slate-300">Display Name</Label>
+          <div className="flex gap-2">
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
+            />
+            <Button
+              variant="outline"
+              onClick={handleSave}
+              disabled={isSaving || name === initialName}
+              className="border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : saved ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                'Save'
+              )}
+            </Button>
           </div>
         </div>
       </CardContent>

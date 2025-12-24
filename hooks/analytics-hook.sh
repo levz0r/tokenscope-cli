@@ -43,6 +43,8 @@ case "$HOOK_EVENT" in
     "SessionStart")
         SOURCE=$(echo "$INPUT" | jq -r '.source // "startup"')
         record_session_start "$SESSION_ID" "$SOURCE" "$CWD" "$PROJECT_NAME"
+        # Scan installed plugins on session start
+        scan_installed_plugins 2>/dev/null || true
         ;;
 
     "SessionEnd")
@@ -101,6 +103,41 @@ case "$HOOK_EVENT" in
                 FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
                 if [[ -n "$FILE_PATH" ]]; then
                     record_file_change "$SESSION_ID" "$TOOL_USE_ID" "$FILE_PATH" "read" "0" "0"
+                fi
+                ;;
+
+            "Skill")
+                # Track skill/command invocations
+                SKILL_NAME=$(echo "$TOOL_INPUT" | jq -r '.skill // empty')
+                SKILL_ARGS=$(echo "$TOOL_INPUT" | jq -r '.args // empty')
+
+                # Extract plugin name if skill is in format "plugin:skill"
+                PLUGIN_NAME=""
+                if [[ "$SKILL_NAME" == *":"* ]]; then
+                    PLUGIN_NAME=$(echo "$SKILL_NAME" | cut -d':' -f1)
+                    SKILL_NAME=$(echo "$SKILL_NAME" | cut -d':' -f2-)
+                fi
+
+                if [[ -n "$SKILL_NAME" ]]; then
+                    record_skill_use "$SESSION_ID" "$SKILL_NAME" "$PLUGIN_NAME" "$SKILL_ARGS"
+                fi
+                ;;
+
+            "Task")
+                # Track agent/subagent spawns
+                AGENT_TYPE=$(echo "$TOOL_INPUT" | jq -r '.subagent_type // empty')
+                DESCRIPTION=$(echo "$TOOL_INPUT" | jq -r '.description // empty')
+                MODEL=$(echo "$TOOL_INPUT" | jq -r '.model // empty')
+                BACKGROUND=$(echo "$TOOL_INPUT" | jq -r '.run_in_background // false')
+
+                # Convert boolean to integer
+                BG_INT=0
+                if [[ "$BACKGROUND" == "true" ]]; then
+                    BG_INT=1
+                fi
+
+                if [[ -n "$AGENT_TYPE" ]]; then
+                    record_agent_spawn "$SESSION_ID" "$AGENT_TYPE" "$DESCRIPTION" "$MODEL" "$BG_INT"
                 fi
                 ;;
 

@@ -35,11 +35,43 @@ interface SyncGitOperation {
   timestamp: string
 }
 
+interface SyncSkillUse {
+  local_session_id: string
+  skill_name: string
+  plugin_name?: string | null
+  args?: string | null
+  timestamp: string
+}
+
+interface SyncAgentSpawn {
+  local_session_id: string
+  agent_type: string
+  description?: string | null
+  model?: string | null
+  background?: boolean
+  timestamp: string
+}
+
+interface SyncPlugin {
+  plugin_name: string
+  plugin_source?: string | null
+  version?: string | null
+  has_skills?: boolean
+  has_agents?: boolean
+  has_hooks?: boolean
+  has_mcp?: boolean
+  first_seen: string
+  last_seen: string
+}
+
 interface SyncPayload {
   sessions?: SyncSession[]
   tool_uses?: SyncToolUse[]
   file_changes?: SyncFileChange[]
   git_operations?: SyncGitOperation[]
+  skill_uses?: SyncSkillUse[]
+  agent_spawns?: SyncAgentSpawn[]
+  installed_plugins?: SyncPlugin[]
 }
 
 export async function POST(request: NextRequest) {
@@ -90,6 +122,9 @@ export async function POST(request: NextRequest) {
       tool_uses: 0,
       file_changes: 0,
       git_operations: 0,
+      skill_uses: 0,
+      agent_spawns: 0,
+      installed_plugins: 0,
     }
 
     // Map to store local_session_id -> cloud session id
@@ -198,6 +233,70 @@ export async function POST(request: NextRequest) {
         })
 
         if (!error) counts.git_operations++
+      }
+    }
+
+    // 5. Sync skill uses
+    if (payload.skill_uses && payload.skill_uses.length > 0) {
+      for (const skillUse of payload.skill_uses) {
+        const sessionId = await getSessionId(skillUse.local_session_id)
+        if (!sessionId) continue
+
+        const { error } = await supabase.from('skill_uses').insert({
+          session_id: sessionId,
+          skill_name: skillUse.skill_name,
+          plugin_name: skillUse.plugin_name,
+          args: skillUse.args,
+          timestamp: skillUse.timestamp,
+        })
+
+        if (!error) counts.skill_uses++
+      }
+    }
+
+    // 6. Sync agent spawns
+    if (payload.agent_spawns && payload.agent_spawns.length > 0) {
+      for (const agentSpawn of payload.agent_spawns) {
+        const sessionId = await getSessionId(agentSpawn.local_session_id)
+        if (!sessionId) continue
+
+        const { error } = await supabase.from('agent_spawns').insert({
+          session_id: sessionId,
+          agent_type: agentSpawn.agent_type,
+          description: agentSpawn.description,
+          model: agentSpawn.model,
+          background: agentSpawn.background ?? false,
+          timestamp: agentSpawn.timestamp,
+        })
+
+        if (!error) counts.agent_spawns++
+      }
+    }
+
+    // 7. Sync installed plugins
+    if (payload.installed_plugins && payload.installed_plugins.length > 0) {
+      for (const plugin of payload.installed_plugins) {
+        const { error } = await supabase
+          .from('installed_plugins')
+          .upsert(
+            {
+              user_id,
+              plugin_name: plugin.plugin_name,
+              plugin_source: plugin.plugin_source,
+              version: plugin.version,
+              has_skills: plugin.has_skills ?? false,
+              has_agents: plugin.has_agents ?? false,
+              has_hooks: plugin.has_hooks ?? false,
+              has_mcp: plugin.has_mcp ?? false,
+              first_seen: plugin.first_seen,
+              last_seen: plugin.last_seen,
+            },
+            {
+              onConflict: 'user_id,plugin_name,plugin_source',
+            }
+          )
+
+        if (!error) counts.installed_plugins++
       }
     }
 

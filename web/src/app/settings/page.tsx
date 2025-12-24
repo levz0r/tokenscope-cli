@@ -47,13 +47,13 @@ export default async function SettingsPage() {
       <div className="flex">
         <Sidebar />
         <main className="flex-1 p-6">
-          <div className="max-w-4xl space-y-6">
+          <div className="space-y-6">
             <div>
               <h1 className="text-2xl font-bold text-white">Settings</h1>
               <p className="text-slate-400">Manage your account and API access</p>
             </div>
 
-            <AccountSection user={user} />
+            <AccountSection user={user} name={profile?.name || null} />
 
             <ApiKeySection apiKey={profile?.api_key || ''} />
 

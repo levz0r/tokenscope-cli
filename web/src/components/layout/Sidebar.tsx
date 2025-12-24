@@ -14,6 +14,7 @@ import {
   Lightbulb,
   Users,
   Settings,
+  Puzzle,
 } from 'lucide-react'
 
 const navigation = [
@@ -56,6 +57,11 @@ const navigation = [
     name: 'MCP',
     href: '/dashboard/mcp',
     icon: Plug,
+  },
+  {
+    name: 'Plugins',
+    href: '/dashboard/plugins',
+    icon: Puzzle,
   },
 ]
 

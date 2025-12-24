@@ -80,10 +80,10 @@ export function ApiKeySection({ apiKey }: ApiKeySectionProps) {
           <Button
             variant="outline"
             size="icon"
-            className="border-slate-700 hover:bg-slate-700"
+            className="border-slate-600 bg-slate-700/50 hover:bg-slate-600"
             onClick={handleCopy}
           >
-            <Copy className={`h-4 w-4 ${copied ? 'text-green-400' : 'text-slate-400'}`} />
+            <Copy className={`h-4 w-4 ${copied ? 'text-green-400' : 'text-white'}`} />
           </Button>
         </div>
 
@@ -94,7 +94,7 @@ export function ApiKeySection({ apiKey }: ApiKeySectionProps) {
           <Button
             variant="outline"
             size="sm"
-            className="border-slate-700 hover:bg-slate-700 text-slate-300"
+            className="border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white"
             onClick={handleRegenerate}
             disabled={isRegenerating}
           >

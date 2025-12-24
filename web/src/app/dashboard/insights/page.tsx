@@ -73,18 +73,26 @@ async function getInsightsData(userId: string): Promise<InsightsData> {
   // 2. File types breakdown
   const extensionMap = new Map<string, number>()
   for (const fc of fileChanges) {
-    const ext = fc.file_path.split('.').pop()?.toLowerCase() || 'unknown'
+    // Get filename from path, then extract extension
+    const filename = fc.file_path.split('/').pop() || ''
+    const lastDotIndex = filename.lastIndexOf('.')
+    // Only treat as extension if dot exists and isn't at the start (hidden files)
+    const ext = lastDotIndex > 0 ? filename.slice(lastDotIndex + 1).toLowerCase() : 'other'
     extensionMap.set(ext, (extensionMap.get(ext) || 0) + 1)
   }
   const totalFiles = fileChanges.length
-  const fileTypes = Array.from(extensionMap.entries())
+  const allFileTypes = Array.from(extensionMap.entries())
     .map(([extension, count]) => ({
       extension,
       count,
       percentage: totalFiles > 0 ? Math.round((count / totalFiles) * 100) : 0,
     }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 10)
+
+  // Take top 9 (excluding "other"), then append "other" at the end if it exists
+  const otherType = allFileTypes.find(ft => ft.extension === 'other')
+  const regularTypes = allFileTypes.filter(ft => ft.extension !== 'other').slice(0, otherType ? 9 : 10)
+  const fileTypes = otherType ? [...regularTypes, otherType] : regularTypes
 
   // 3. Code churn over time (last 14 days)
   const churnMap = new Map<string, { added: number; removed: number }>()
@@ -137,9 +145,17 @@ async function getInsightsData(userId: string): Promise<InsightsData> {
   // 5. Directory activity
   const directoryMap = new Map<string, number>()
   for (const fc of fileChanges) {
-    const parts = fc.file_path.split('/')
-    // Get top-level directory or file
-    const directory = parts.length > 1 ? parts.slice(0, 2).join('/') : parts[0]
+    let path = fc.file_path
+    // Remove common absolute path prefixes to get project-relative paths
+    // Match patterns like /Users/*/Dev/*/ or /home/*/ or ~/
+    path = path.replace(/^\/Users\/[^/]+\/(?:Dev|Development|Projects|Code|repos)\/[^/]+\//, '')
+    path = path.replace(/^\/home\/[^/]+\/[^/]+\//, '')
+    path = path.replace(/^~\/[^/]+\//, '')
+    path = path.replace(/^\.\//, '')
+
+    const parts = path.split('/').filter(Boolean)
+    // Get first directory level, or group root files together
+    const directory = parts.length > 1 ? parts[0] : '(root)'
     directoryMap.set(directory, (directoryMap.get(directory) || 0) + 1)
   }
 
@@ -258,7 +274,7 @@ export default async function InsightsPage() {
                 {insights.fileTypes.map((ft) => (
                   <div key={ft.extension} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-white font-mono">.{ft.extension}</span>
+                      <span className={`text-white ${ft.extension === 'other' ? 'italic text-slate-400' : 'font-mono'}`}>{ft.extension === 'other' ? 'other' : `.${ft.extension}`}</span>
                       <span className="text-slate-400">{ft.count} ({ft.percentage}%)</span>
                     </div>
                     <div className="h-2 bg-slate-700 rounded-full overflow-hidden">

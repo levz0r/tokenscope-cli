@@ -84,12 +84,52 @@ CREATE TABLE IF NOT EXISTS user_prompts (
     FOREIGN KEY (session_id) REFERENCES sessions(session_id)
 );
 
+-- Skill/command usage tracking
+CREATE TABLE IF NOT EXISTS skill_uses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    skill_name TEXT NOT NULL,        -- e.g., "commit", "review-pr", "deploy"
+    plugin_name TEXT,                -- e.g., "vercel", "plugin-dev"
+    args TEXT,                       -- arguments passed to skill
+    timestamp TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+);
+
+-- Agent/subagent spawn tracking
+CREATE TABLE IF NOT EXISTS agent_spawns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    agent_type TEXT NOT NULL,        -- e.g., "Explore", "Plan", "code-architect"
+    description TEXT,                -- task description
+    model TEXT,                      -- sonnet, opus, haiku
+    background INTEGER DEFAULT 0,    -- ran in background?
+    timestamp TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+);
+
+-- Installed plugins inventory
+CREATE TABLE IF NOT EXISTS installed_plugins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    plugin_name TEXT NOT NULL,       -- e.g., "vercel", "plugin-dev"
+    plugin_source TEXT,              -- e.g., "claude-plugins-official", local path
+    version TEXT,
+    has_skills INTEGER DEFAULT 0,
+    has_agents INTEGER DEFAULT 0,
+    has_hooks INTEGER DEFAULT 0,
+    has_mcp INTEGER DEFAULT 0,
+    first_seen TEXT NOT NULL,
+    last_seen TEXT NOT NULL,
+    UNIQUE(plugin_name, plugin_source)
+);
+
 -- Create indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_tool_uses_session ON tool_uses(session_id);
 CREATE INDEX IF NOT EXISTS idx_tool_uses_timestamp ON tool_uses(timestamp);
 CREATE INDEX IF NOT EXISTS idx_file_changes_session ON file_changes(session_id);
 CREATE INDEX IF NOT EXISTS idx_git_operations_session ON git_operations(session_id);
 CREATE INDEX IF NOT EXISTS idx_token_usage_session ON token_usage(session_id);
+CREATE INDEX IF NOT EXISTS idx_skill_uses_session ON skill_uses(session_id);
+CREATE INDEX IF NOT EXISTS idx_agent_spawns_session ON agent_spawns(session_id);
 
 -- Aggregated daily stats view
 CREATE VIEW IF NOT EXISTS daily_stats AS
@@ -207,9 +247,110 @@ record_user_prompt() {
     "
 }
 
+# Record skill/command usage
+record_skill_use() {
+    local session_id="$1"
+    local skill_name="$2"
+    local plugin_name="${3:-}"
+    local args="${4:-}"
+
+    # Escape single quotes
+    args="${args//\'/\'\'}"
+
+    sqlite3 "$DB_FILE" "
+        INSERT INTO skill_uses (session_id, skill_name, plugin_name, args, timestamp)
+        VALUES ('$session_id', '$skill_name', '$plugin_name', '$args', datetime('now'));
+    "
+}
+
+# Record agent spawn
+record_agent_spawn() {
+    local session_id="$1"
+    local agent_type="$2"
+    local description="${3:-}"
+    local model="${4:-}"
+    local background="${5:-0}"
+
+    # Escape single quotes
+    description="${description//\'/\'\'}"
+
+    sqlite3 "$DB_FILE" "
+        INSERT INTO agent_spawns (session_id, agent_type, description, model, background, timestamp)
+        VALUES ('$session_id', '$agent_type', '$description', '$model', $background, datetime('now'));
+    "
+}
+
+# Record or update installed plugin
+record_plugin() {
+    local plugin_name="$1"
+    local plugin_source="${2:-}"
+    local version="${3:-}"
+    local has_skills="${4:-0}"
+    local has_agents="${5:-0}"
+    local has_hooks="${6:-0}"
+    local has_mcp="${7:-0}"
+
+    sqlite3 "$DB_FILE" "
+        INSERT INTO installed_plugins (plugin_name, plugin_source, version, has_skills, has_agents, has_hooks, has_mcp, first_seen, last_seen)
+        VALUES ('$plugin_name', '$plugin_source', '$version', $has_skills, $has_agents, $has_hooks, $has_mcp, datetime('now'), datetime('now'))
+        ON CONFLICT(plugin_name, plugin_source) DO UPDATE SET
+            version = excluded.version,
+            has_skills = excluded.has_skills,
+            has_agents = excluded.has_agents,
+            has_hooks = excluded.has_hooks,
+            has_mcp = excluded.has_mcp,
+            last_seen = datetime('now');
+    "
+}
+
 # Get database file path
 get_db_path() {
     echo "$DB_FILE"
+}
+
+# Scan and record installed Claude Code plugins
+scan_installed_plugins() {
+    local plugins_file="$HOME/.claude/plugins/installed_plugins.json"
+
+    if [[ ! -f "$plugins_file" ]]; then
+        return 0
+    fi
+
+    # Parse each plugin from the JSON file using a while loop to handle spaces/newlines
+    jq -r '.plugins | to_entries[] | .key' "$plugins_file" 2>/dev/null | while IFS= read -r plugin_key; do
+        [[ -z "$plugin_key" ]] && continue
+
+        # Parse plugin_name@source format
+        local plugin_name="${plugin_key%%@*}"
+        local plugin_source="${plugin_key#*@}"
+
+        # Get version from the plugin data
+        local version=$(jq -r ".plugins[\"$plugin_key\"][0].version // \"\"" "$plugins_file" 2>/dev/null)
+        local install_path=$(jq -r ".plugins[\"$plugin_key\"][0].installPath // \"\"" "$plugins_file" 2>/dev/null)
+
+        # Check what features the plugin has by examining its directory
+        local has_skills=0
+        local has_agents=0
+        local has_hooks=0
+        local has_mcp=0
+
+        if [[ -d "$install_path" ]]; then
+            # Check for skills (commands directory or skills in plugin.json)
+            [[ -d "$install_path/commands" ]] && has_skills=1
+            if [[ -f "$install_path/plugin.json" ]]; then
+                jq -e '.skills // empty | length > 0' "$install_path/plugin.json" >/dev/null 2>&1 && has_skills=1
+                jq -e '.agents // empty | length > 0' "$install_path/plugin.json" >/dev/null 2>&1 && has_agents=1
+                jq -e '.hooks // empty | length > 0' "$install_path/plugin.json" >/dev/null 2>&1 && has_hooks=1
+                jq -e '.mcp // empty' "$install_path/plugin.json" >/dev/null 2>&1 && has_mcp=1
+            fi
+            [[ -d "$install_path/agents" ]] && has_agents=1
+            [[ -d "$install_path/hooks" ]] && has_hooks=1
+            [[ -f "$install_path/.mcp.json" ]] && has_mcp=1
+        fi
+
+        # Record the plugin
+        record_plugin "$plugin_name" "$plugin_source" "$version" "$has_skills" "$has_agents" "$has_hooks" "$has_mcp"
+    done
 }
 
 # ============================================
@@ -232,6 +373,15 @@ ALTER TABLE file_changes ADD COLUMN synced INTEGER DEFAULT 0;
 
 -- Add sync tracking to git_operations
 ALTER TABLE git_operations ADD COLUMN synced INTEGER DEFAULT 0;
+
+-- Add sync tracking to skill_uses
+ALTER TABLE skill_uses ADD COLUMN synced INTEGER DEFAULT 0;
+
+-- Add sync tracking to agent_spawns
+ALTER TABLE agent_spawns ADD COLUMN synced INTEGER DEFAULT 0;
+
+-- Add sync tracking to installed_plugins
+ALTER TABLE installed_plugins ADD COLUMN synced INTEGER DEFAULT 0;
 
 -- Cloud authentication table
 CREATE TABLE IF NOT EXISTS cloud_auth (
@@ -307,38 +457,72 @@ update_last_sync() {
 
 # Get unsynced sessions
 get_unsynced_sessions() {
-    sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -json "$DB_FILE" "
         SELECT session_id as local_session_id, start_time, end_time, project_name, source, reason
         FROM sessions
         WHERE synced = 0 OR synced IS NULL;
-    " 2>/dev/null
+    " 2>/dev/null)
+    echo "${result:-[]}"
 }
 
 # Get unsynced tool uses
 get_unsynced_tool_uses() {
-    sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -json "$DB_FILE" "
         SELECT t.session_id as local_session_id, t.tool_name, t.tool_use_id, t.timestamp, t.success
         FROM tool_uses t
         WHERE t.synced = 0 OR t.synced IS NULL;
-    " 2>/dev/null
+    " 2>/dev/null)
+    echo "${result:-[]}"
 }
 
 # Get unsynced file changes
 get_unsynced_file_changes() {
-    sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -json "$DB_FILE" "
         SELECT f.session_id as local_session_id, f.file_path, f.operation, f.lines_added, f.lines_removed, f.timestamp
         FROM file_changes f
         WHERE f.synced = 0 OR f.synced IS NULL;
-    " 2>/dev/null
+    " 2>/dev/null)
+    echo "${result:-[]}"
 }
 
 # Get unsynced git operations
 get_unsynced_git_ops() {
-    sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -json "$DB_FILE" "
         SELECT g.session_id as local_session_id, g.command, g.operation_type, g.exit_code, g.timestamp
         FROM git_operations g
         WHERE g.synced = 0 OR g.synced IS NULL;
-    " 2>/dev/null
+    " 2>/dev/null)
+    echo "${result:-[]}"
+}
+
+# Get unsynced skill uses
+get_unsynced_skill_uses() {
+    local result=$(sqlite3 -json "$DB_FILE" "
+        SELECT s.session_id as local_session_id, s.skill_name, s.plugin_name, s.args, s.timestamp
+        FROM skill_uses s
+        WHERE s.synced = 0 OR s.synced IS NULL;
+    " 2>/dev/null)
+    echo "${result:-[]}"
+}
+
+# Get unsynced agent spawns
+get_unsynced_agent_spawns() {
+    local result=$(sqlite3 -json "$DB_FILE" "
+        SELECT a.session_id as local_session_id, a.agent_type, a.description, a.model, a.background, a.timestamp
+        FROM agent_spawns a
+        WHERE a.synced = 0 OR a.synced IS NULL;
+    " 2>/dev/null)
+    echo "${result:-[]}"
+}
+
+# Get unsynced plugins
+get_unsynced_plugins() {
+    local result=$(sqlite3 -json "$DB_FILE" "
+        SELECT plugin_name, plugin_source, version, has_skills, has_agents, has_hooks, has_mcp, first_seen, last_seen
+        FROM installed_plugins
+        WHERE synced = 0 OR synced IS NULL;
+    " 2>/dev/null)
+    echo "${result:-[]}"
 }
 
 # Mark sessions as synced
@@ -361,6 +545,21 @@ mark_git_ops_synced() {
     sqlite3 "$DB_FILE" "UPDATE git_operations SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
+# Mark skill uses as synced
+mark_skill_uses_synced() {
+    sqlite3 "$DB_FILE" "UPDATE skill_uses SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+}
+
+# Mark agent spawns as synced
+mark_agent_spawns_synced() {
+    sqlite3 "$DB_FILE" "UPDATE agent_spawns SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+}
+
+# Mark plugins as synced
+mark_plugins_synced() {
+    sqlite3 "$DB_FILE" "UPDATE installed_plugins SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+}
+
 # Log sync operation
 log_sync() {
     local operation="$1"
@@ -381,6 +580,9 @@ get_sync_stats() {
             (SELECT COUNT(*) FROM tool_uses WHERE synced = 0 OR synced IS NULL) as unsynced_tools,
             (SELECT COUNT(*) FROM file_changes WHERE synced = 0 OR synced IS NULL) as unsynced_files,
             (SELECT COUNT(*) FROM git_operations WHERE synced = 0 OR synced IS NULL) as unsynced_git,
+            (SELECT COUNT(*) FROM skill_uses WHERE synced = 0 OR synced IS NULL) as unsynced_skills,
+            (SELECT COUNT(*) FROM agent_spawns WHERE synced = 0 OR synced IS NULL) as unsynced_agents,
+            (SELECT COUNT(*) FROM installed_plugins WHERE synced = 0 OR synced IS NULL) as unsynced_plugins,
             (SELECT last_sync FROM cloud_auth WHERE id = 1) as last_sync;
     "
 }

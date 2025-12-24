@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Loader2 } from 'lucide-react'
+import { buttonStyles, inputStyles } from '@/lib/styles'
 
 interface CreateTeamButtonProps {
   variant?: 'default' | 'large'
@@ -60,12 +61,12 @@ export function CreateTeamButton({ variant = 'default' }: CreateTeamButtonProps)
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {variant === 'large' ? (
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button variant="outline" className={buttonStyles.primary}>
             <Plus className="mr-2 h-4 w-4" />
             Create Your First Team
           </Button>
         ) : (
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button variant="outline" className={buttonStyles.primary}>
             <Plus className="mr-2 h-4 w-4" />
             Create Team
           </Button>
@@ -88,7 +89,7 @@ export function CreateTeamButton({ variant = 'default' }: CreateTeamButtonProps)
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My Team"
-              className="mt-2 bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
+              className={`mt-2 ${inputStyles.default}`}
               disabled={loading}
               autoFocus
             />
@@ -101,14 +102,15 @@ export function CreateTeamButton({ variant = 'default' }: CreateTeamButtonProps)
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              className={buttonStyles.primary}
               disabled={loading}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700"
+              variant="outline"
+              className={buttonStyles.primary}
               disabled={loading || !name.trim()}
             >
               {loading ? (

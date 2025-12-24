@@ -143,13 +143,13 @@ export default async function TeamPage() {
                 </div>
                 <div className="flex gap-2">
                   <Link href={`/team/${team.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700">
+                    <Button variant="outline" className="w-full border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white">
                       View Dashboard
                     </Button>
                   </Link>
                   {(team.role === 'owner' || team.role === 'admin') && (
                     <Link href="/team/members">
-                      <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+                      <Button variant="outline" className="border-slate-600 bg-slate-700/50 hover:bg-slate-600 text-white">
                         <Users className="h-4 w-4" />
                       </Button>
                     </Link>

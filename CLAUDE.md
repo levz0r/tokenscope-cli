@@ -80,6 +80,28 @@ cd web && npm run dev
 cd web && vercel
 ```
 
+## UI Styling Conventions
+
+**ALWAYS use shared styles from `web/src/lib/styles.ts` when styling buttons and inputs.**
+
+```typescript
+import { buttonStyles, inputStyles } from '@/lib/styles'
+
+// Buttons - use with variant="outline"
+<Button variant="outline" className={buttonStyles.primary}>Click me</Button>
+
+// Inputs
+<Input className={inputStyles.default} />
+```
+
+Available styles:
+- `buttonStyles.primary` - Main action buttons (slate background, white text)
+- `buttonStyles.destructive` - Delete/remove actions (red tinted)
+- `buttonStyles.ghost` - Minimal buttons
+- `inputStyles.default` - Standard input fields
+
+**Do NOT use blue (`bg-blue-600`) for buttons.** The app uses a slate/gray theme.
+
 ## Important Notes
 
 1. **Always update PLAN.md** when completing tasks
@@ -87,6 +109,7 @@ cd web && vercel
 3. **Commit frequently** with descriptive messages
 4. **Keep costs low** - use free tiers where possible
 5. **Privacy first** - local data stays local unless user opts into sync
+6. **Use shared styles** - Always import from `@/lib/styles` for buttons/inputs
 
 ## Git Workflow
 

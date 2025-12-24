@@ -10,6 +10,7 @@ import {
   Terminal,
   Users,
 } from 'lucide-react'
+import { DashboardCarousel } from '@/components/landing/DashboardCarousel'
 
 const features = [
   {
@@ -52,9 +53,9 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-              CC
+              TS
             </div>
-            <span className="font-semibold text-white">Claude Analytics</span>
+            <span className="font-semibold text-white">TokenScope</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login">
@@ -85,8 +86,8 @@ export default function Home() {
           </span>
         </h1>
         <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
-          Analytics for Claude Code. Track tool usage, file changes, git operations,
-          and coding patterns. Free and open source.
+          Analytics for AI-assisted coding. Track tool usage, file changes, git operations,
+          and coding patterns. Works with Claude Code.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/login">
@@ -105,43 +106,9 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Terminal Preview */}
-        <div className="mt-16 max-w-3xl mx-auto">
-          <div className="rounded-lg border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-700">
-              <div className="h-3 w-3 rounded-full bg-red-500" />
-              <div className="h-3 w-3 rounded-full bg-yellow-500" />
-              <div className="h-3 w-3 rounded-full bg-green-500" />
-              <span className="ml-2 text-xs text-slate-500">cc-analytics</span>
-            </div>
-            <div className="p-4 font-mono text-sm">
-              <pre className="text-slate-400">
-{`$ cc-analytics
-
-═══════════════════════════════════════════════════
-                 CLAUDE CODE ANALYTICS
-═══════════════════════════════════════════════════
-
-📊 Overview
-   Total Sessions:     42
-   Active Sessions:    1
-   Today's Sessions:   8
-
-🛠  Tool Usage
-   Total Tool Calls:   1,847 (312 today)
-   ├─ Write:           234
-   ├─ Edit:            412
-   ├─ Read:            621
-   └─ Bash:            580
-
-📁 File Changes
-   Unique Files:       156
-   Lines Added:        +12,847
-   Lines Removed:      -3,291
-   Net Change:         +9,556`}
-              </pre>
-            </div>
-          </div>
+        {/* Dashboard Preview */}
+        <div className="mt-16 px-8">
+          <DashboardCarousel />
         </div>
       </section>
 
@@ -199,9 +166,9 @@ export default function Home() {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
-              CC
+              TS
             </div>
-            <span className="text-sm text-slate-400">Claude Code Analytics</span>
+            <span className="text-sm text-slate-400">TokenScope</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-slate-400">
             <Link

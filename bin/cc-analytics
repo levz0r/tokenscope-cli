@@ -558,14 +558,20 @@ cloud_status() {
         local unsynced_tools=$(echo "$stats" | cut -d'|' -f2)
         local unsynced_files=$(echo "$stats" | cut -d'|' -f3)
         local unsynced_git=$(echo "$stats" | cut -d'|' -f4)
+        local unsynced_skills=$(echo "$stats" | cut -d'|' -f5)
+        local unsynced_agents=$(echo "$stats" | cut -d'|' -f6)
+        local unsynced_plugins=$(echo "$stats" | cut -d'|' -f7)
 
-        local total_unsynced=$((unsynced_sessions + unsynced_tools + unsynced_files + unsynced_git))
+        local total_unsynced=$((unsynced_sessions + unsynced_tools + unsynced_files + unsynced_git + unsynced_skills + unsynced_agents + unsynced_plugins))
 
         echo -e "${BOLD}Pending Sync:${NC}"
         echo -e "  Sessions:      $unsynced_sessions"
         echo -e "  Tool Uses:     $unsynced_tools"
         echo -e "  File Changes:  $unsynced_files"
         echo -e "  Git Ops:       $unsynced_git"
+        echo -e "  Skills:        $unsynced_skills"
+        echo -e "  Agents:        $unsynced_agents"
+        echo -e "  Plugins:       $unsynced_plugins"
         echo -e "  ${BOLD}Total:${NC}         ${YELLOW}$total_unsynced${NC} records"
 
         if [[ $total_unsynced -gt 0 ]]; then
@@ -601,21 +607,27 @@ cloud_sync() {
     local tool_uses=$(get_unsynced_tool_uses)
     local file_changes=$(get_unsynced_file_changes)
     local git_ops=$(get_unsynced_git_ops)
+    local skill_uses=$(get_unsynced_skill_uses 2>/dev/null || echo "[]")
+    local agent_spawns=$(get_unsynced_agent_spawns 2>/dev/null || echo "[]")
+    local plugins=$(get_unsynced_plugins 2>/dev/null || echo "[]")
 
     # Count records
     local session_count=$(echo "$sessions" | jq -r 'length // 0' 2>/dev/null || echo "0")
     local tool_count=$(echo "$tool_uses" | jq -r 'length // 0' 2>/dev/null || echo "0")
     local file_count=$(echo "$file_changes" | jq -r 'length // 0' 2>/dev/null || echo "0")
     local git_count=$(echo "$git_ops" | jq -r 'length // 0' 2>/dev/null || echo "0")
+    local skill_count=$(echo "$skill_uses" | jq -r 'length // 0' 2>/dev/null || echo "0")
+    local agent_count=$(echo "$agent_spawns" | jq -r 'length // 0' 2>/dev/null || echo "0")
+    local plugin_count=$(echo "$plugins" | jq -r 'length // 0' 2>/dev/null || echo "0")
 
-    local total=$((session_count + tool_count + file_count + git_count))
+    local total=$((session_count + tool_count + file_count + git_count + skill_count + agent_count + plugin_count))
 
     if [[ $total -eq 0 ]]; then
         echo -e "${GREEN}✓ Everything is synced!${NC}"
         return
     fi
 
-    echo -e "  Syncing $session_count sessions, $tool_count tool uses, $file_count file changes, $git_count git ops..."
+    echo -e "  Syncing $session_count sessions, $tool_count tool uses, $file_count file changes, $git_count git ops, $skill_count skills, $agent_count agents, $plugin_count plugins..."
     echo
 
     # Build payload
@@ -624,7 +636,10 @@ cloud_sync() {
         --argjson tool_uses "$tool_uses" \
         --argjson file_changes "$file_changes" \
         --argjson git_operations "$git_ops" \
-        '{sessions: $sessions, tool_uses: $tool_uses, file_changes: $file_changes, git_operations: $git_operations}')
+        --argjson skill_uses "$skill_uses" \
+        --argjson agent_spawns "$agent_spawns" \
+        --argjson installed_plugins "$plugins" \
+        '{sessions: $sessions, tool_uses: $tool_uses, file_changes: $file_changes, git_operations: $git_operations, skill_uses: $skill_uses, agent_spawns: $agent_spawns, installed_plugins: $installed_plugins}')
 
     # Send to API
     local response=$(curl -s -w "\n%{http_code}" \
@@ -643,6 +658,9 @@ cloud_sync() {
         mark_tool_uses_synced
         mark_file_changes_synced
         mark_git_ops_synced
+        mark_skill_uses_synced 2>/dev/null || true
+        mark_agent_spawns_synced 2>/dev/null || true
+        mark_plugins_synced 2>/dev/null || true
         update_last_sync
 
         local synced=$(echo "$body" | jq -r '.synced')
@@ -651,6 +669,9 @@ cloud_sync() {
         echo -e "  Tool Uses:     $(echo "$synced" | jq -r '.tool_uses // 0')"
         echo -e "  File Changes:  $(echo "$synced" | jq -r '.file_changes // 0')"
         echo -e "  Git Ops:       $(echo "$synced" | jq -r '.git_operations // 0')"
+        echo -e "  Skills:        $(echo "$synced" | jq -r '.skill_uses // 0')"
+        echo -e "  Agents:        $(echo "$synced" | jq -r '.agent_spawns // 0')"
+        echo -e "  Plugins:       $(echo "$synced" | jq -r '.installed_plugins // 0')"
 
         log_sync "sync_complete" "$total"
     else

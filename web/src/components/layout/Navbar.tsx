@@ -21,6 +21,7 @@ interface NavbarProps {
   profile: {
     email: string
     api_key: string
+    name?: string | null
   } | null
 }
 
@@ -37,8 +38,11 @@ export function Navbar({ user, profile }: NavbarProps) {
     router.refresh()
   }
 
-  const initials = user.email
-    ?.split('@')[0]
+  const displayName = profile?.name || user.email?.split('@')[0] || 'User'
+  const initials = displayName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
     .slice(0, 2)
     .toUpperCase() || 'U'
 
@@ -46,7 +50,7 @@ export function Navbar({ user, profile }: NavbarProps) {
     <nav className="sticky top-0 z-50 border-b border-slate-700 bg-slate-800/80 backdrop-blur">
       <div className="flex h-14 items-center px-4 justify-between">
         <Link href="/dashboard" className="font-semibold text-white hover:text-blue-400 transition-colors">
-          Claude Analytics
+          TokenScope
         </Link>
 
         <div className="flex items-center gap-4">
@@ -63,7 +67,7 @@ export function Navbar({ user, profile }: NavbarProps) {
             <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700" align="end">
               <DropdownMenuLabel className="text-slate-300">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium text-white">{user.email?.split('@')[0]}</p>
+                  <p className="text-sm font-medium text-white">{displayName}</p>
                   <p className="text-xs text-slate-400">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
