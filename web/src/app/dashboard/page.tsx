@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { SummaryCards } from '@/components/analytics/SummaryCards'
 import { ToolUsageChart } from '@/components/analytics/ToolUsageChart'
 import { RecentActivity } from '@/components/analytics/RecentActivity'
+import { LiveSummaryCards } from '@/components/dashboard/LiveSummaryCards'
 
 interface ToolUse { tool_name: string; success: boolean }
 interface FileChange { lines_added: number; lines_removed: number }
@@ -112,15 +112,18 @@ export default async function DashboardPage() {
         <p className="text-gray-500">Your Claude Code analytics overview</p>
       </div>
 
-      <SummaryCards
-        sessions={analytics.totalSessions}
-        toolUses={analytics.totalToolUses}
-        linesAdded={analytics.linesAdded}
-        linesRemoved={analytics.linesRemoved}
-        gitOps={analytics.totalGitOps}
-        uniqueFiles={analytics.uniqueFiles}
-        mcpCalls={analytics.mcpCalls}
-        successRate={analytics.successRate}
+      <LiveSummaryCards
+        userId={user.id}
+        initialData={{
+          sessions: analytics.totalSessions,
+          toolUses: analytics.totalToolUses,
+          linesAdded: analytics.linesAdded,
+          linesRemoved: analytics.linesRemoved,
+          gitOps: analytics.totalGitOps,
+          uniqueFiles: analytics.uniqueFiles,
+          mcpCalls: analytics.mcpCalls,
+          successRate: analytics.successRate,
+        }}
       />
 
       <div className="grid gap-6 md:grid-cols-2">
