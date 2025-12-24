@@ -61,11 +61,13 @@ echo -e "${BLUE}Installing analytics files...${NC}"
 
 cp "$SCRIPT_DIR/hooks/analytics-hook.sh" "$INSTALL_DIR/hooks/"
 cp "$SCRIPT_DIR/lib/db.sh" "$INSTALL_DIR/lib/"
+cp "$SCRIPT_DIR/lib/sync-daemon.sh" "$INSTALL_DIR/lib/"
 cp "$SCRIPT_DIR/bin/cc-analytics" "$BIN_DIR/"
 
 # Make scripts executable
 chmod +x "$INSTALL_DIR/hooks/analytics-hook.sh"
 chmod +x "$INSTALL_DIR/lib/db.sh"
+chmod +x "$INSTALL_DIR/lib/sync-daemon.sh"
 chmod +x "$BIN_DIR/cc-analytics"
 
 echo -e "${GREEN}✓ Files installed${NC}"
@@ -185,6 +187,69 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
     fi
 fi
 
+# Optional: Set up background sync daemon (macOS only)
+if [[ "$(uname)" == "Darwin" ]]; then
+    echo
+    echo -e "${BLUE}Background Sync Setup (Optional)${NC}"
+    echo -e "Would you like to enable automatic cloud sync every 5 minutes?"
+    echo -e "This requires logging in with: ${CYAN}cc-analytics login${NC}"
+    read -p "Enable background sync? (y/N): " ENABLE_SYNC
+
+    if [[ "$ENABLE_SYNC" =~ ^[Yy]$ ]]; then
+        LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+        PLIST_FILE="com.claude-analytics.sync.plist"
+
+        mkdir -p "$LAUNCH_AGENTS_DIR"
+
+        # Create the plist with expanded $HOME
+        cat > "$LAUNCH_AGENTS_DIR/$PLIST_FILE" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.claude-analytics.sync</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>$HOME/.claude/analytics/lib/sync-daemon.sh</string>
+    </array>
+
+    <key>StartInterval</key>
+    <integer>300</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/claude-analytics-sync.out</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/claude-analytics-sync.err</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+    </dict>
+</dict>
+</plist>
+PLIST
+
+        # Load the launch agent
+        launchctl unload "$LAUNCH_AGENTS_DIR/$PLIST_FILE" 2>/dev/null || true
+        launchctl load "$LAUNCH_AGENTS_DIR/$PLIST_FILE"
+
+        echo -e "${GREEN}✓ Background sync enabled${NC}"
+        echo -e "  Syncs every 5 minutes when logged in"
+        echo -e "  Logs: /tmp/claude-analytics-sync.out"
+    else
+        echo -e "${YELLOW}Skipped background sync setup${NC}"
+        echo -e "  You can manually sync with: ${CYAN}cc-analytics sync${NC}"
+    fi
+fi
+
 echo
 echo -e "${BOLD}${GREEN}════════════════════════════════════════════════════════════════${NC}"
 echo -e "${BOLD}${GREEN}                    Installation Complete!                       ${NC}"
@@ -196,17 +261,24 @@ echo -e "  ${DIM}Library:${NC}   $INSTALL_DIR/lib/"
 echo -e "  ${DIM}Database:${NC}  $INSTALL_DIR/analytics.db"
 echo -e "  ${DIM}CLI:${NC}       $BIN_DIR/cc-analytics"
 echo
-echo -e "${BOLD}Usage:${NC}"
+echo -e "${BOLD}Local Analytics:${NC}"
 echo -e "  ${CYAN}cc-analytics${NC}           # Show summary dashboard"
 echo -e "  ${CYAN}cc-analytics sessions${NC}  # List recent sessions"
 echo -e "  ${CYAN}cc-analytics tools${NC}     # Show tool usage"
 echo -e "  ${CYAN}cc-analytics files${NC}     # Show modified files"
 echo -e "  ${CYAN}cc-analytics git${NC}       # Show git operations"
+echo -e "  ${CYAN}cc-analytics times${NC}     # Time analytics"
 echo -e "  ${CYAN}cc-analytics help${NC}      # Show all commands"
+echo
+echo -e "${BOLD}Cloud Sync (Optional):${NC}"
+echo -e "  ${CYAN}cc-analytics login${NC}     # Connect to cloud dashboard"
+echo -e "  ${CYAN}cc-analytics status${NC}    # Show sync status"
+echo -e "  ${CYAN}cc-analytics sync${NC}      # Sync data to cloud"
+echo -e "  ${CYAN}cc-analytics logout${NC}    # Disconnect from cloud"
 echo
 echo -e "${YELLOW}Note: Restart your terminal or run 'source ~/.zshrc' to use cc-analytics${NC}"
 echo
-echo -e "${BOLD}For OpenTelemetry token tracking (optional):${NC}"
-echo -e "  See: $SCRIPT_DIR/config/otel-collector-config.yaml"
-echo -e "  Or run: docker-compose up -d (from $SCRIPT_DIR)"
+echo -e "${BOLD}Cloud Dashboard:${NC}"
+echo -e "  Sign up at: ${CYAN}https://claude-analytics.vercel.app${NC}"
+echo -e "  View team analytics, share with managers, track across devices"
 echo

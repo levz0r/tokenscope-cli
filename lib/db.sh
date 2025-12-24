@@ -211,3 +211,176 @@ record_user_prompt() {
 get_db_path() {
     echo "$DB_FILE"
 }
+
+# ============================================
+# CLOUD SYNC FUNCTIONS
+# ============================================
+
+# Migrate database to add sync columns (run once)
+migrate_for_sync() {
+    ensure_db_dir
+    sqlite3 "$DB_FILE" <<'SQL'
+-- Add sync tracking columns to sessions
+ALTER TABLE sessions ADD COLUMN synced INTEGER DEFAULT 0;
+ALTER TABLE sessions ADD COLUMN cloud_id TEXT;
+
+-- Add sync tracking to tool_uses
+ALTER TABLE tool_uses ADD COLUMN synced INTEGER DEFAULT 0;
+
+-- Add sync tracking to file_changes
+ALTER TABLE file_changes ADD COLUMN synced INTEGER DEFAULT 0;
+
+-- Add sync tracking to git_operations
+ALTER TABLE git_operations ADD COLUMN synced INTEGER DEFAULT 0;
+
+-- Cloud authentication table
+CREATE TABLE IF NOT EXISTS cloud_auth (
+    id INTEGER PRIMARY KEY CHECK (id = 1),  -- Only one row allowed
+    api_key TEXT NOT NULL,
+    user_id TEXT,
+    email TEXT,
+    team_id TEXT,
+    api_url TEXT DEFAULT 'http://localhost:3000',
+    last_sync TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Sync log for tracking sync operations
+CREATE TABLE IF NOT EXISTS sync_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    operation TEXT NOT NULL,  -- sync_start, sync_complete, sync_error
+    records_synced INTEGER DEFAULT 0,
+    error_message TEXT,
+    timestamp TEXT DEFAULT (datetime('now'))
+);
+SQL
+    echo "Database migrated for cloud sync"
+}
+
+# Check if sync migration has been applied
+is_sync_enabled() {
+    local result=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM pragma_table_info('sessions') WHERE name='synced';" 2>/dev/null)
+    [[ "$result" == "1" ]]
+}
+
+# Save cloud credentials
+save_cloud_auth() {
+    local api_key="$1"
+    local api_url="${2:-http://localhost:3000}"
+    local email="${3:-}"
+    local user_id="${4:-}"
+    local team_id="${5:-}"
+
+    ensure_db_dir
+
+    # Ensure sync tables exist
+    if ! is_sync_enabled; then
+        migrate_for_sync 2>/dev/null
+    fi
+
+    sqlite3 "$DB_FILE" "
+        INSERT OR REPLACE INTO cloud_auth (id, api_key, api_url, email, user_id, team_id)
+        VALUES (1, '$api_key', '$api_url', '$email', '$user_id', '$team_id');
+    "
+}
+
+# Get cloud credentials
+get_cloud_auth() {
+    sqlite3 -json "$DB_FILE" "SELECT api_key, api_url, email, user_id, team_id, last_sync FROM cloud_auth WHERE id = 1;" 2>/dev/null
+}
+
+# Check if logged in to cloud
+is_logged_in() {
+    local result=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM cloud_auth WHERE id = 1;" 2>/dev/null)
+    [[ "$result" == "1" ]]
+}
+
+# Clear cloud credentials (logout)
+clear_cloud_auth() {
+    sqlite3 "$DB_FILE" "DELETE FROM cloud_auth;" 2>/dev/null
+}
+
+# Update last sync time
+update_last_sync() {
+    sqlite3 "$DB_FILE" "UPDATE cloud_auth SET last_sync = datetime('now') WHERE id = 1;"
+}
+
+# Get unsynced sessions
+get_unsynced_sessions() {
+    sqlite3 -json "$DB_FILE" "
+        SELECT session_id as local_session_id, start_time, end_time, project_name, source, reason
+        FROM sessions
+        WHERE synced = 0 OR synced IS NULL;
+    " 2>/dev/null
+}
+
+# Get unsynced tool uses
+get_unsynced_tool_uses() {
+    sqlite3 -json "$DB_FILE" "
+        SELECT t.session_id as local_session_id, t.tool_name, t.tool_use_id, t.timestamp, t.success
+        FROM tool_uses t
+        WHERE t.synced = 0 OR t.synced IS NULL;
+    " 2>/dev/null
+}
+
+# Get unsynced file changes
+get_unsynced_file_changes() {
+    sqlite3 -json "$DB_FILE" "
+        SELECT f.session_id as local_session_id, f.file_path, f.operation, f.lines_added, f.lines_removed, f.timestamp
+        FROM file_changes f
+        WHERE f.synced = 0 OR f.synced IS NULL;
+    " 2>/dev/null
+}
+
+# Get unsynced git operations
+get_unsynced_git_ops() {
+    sqlite3 -json "$DB_FILE" "
+        SELECT g.session_id as local_session_id, g.command, g.operation_type, g.exit_code, g.timestamp
+        FROM git_operations g
+        WHERE g.synced = 0 OR g.synced IS NULL;
+    " 2>/dev/null
+}
+
+# Mark sessions as synced
+mark_sessions_synced() {
+    sqlite3 "$DB_FILE" "UPDATE sessions SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+}
+
+# Mark tool uses as synced
+mark_tool_uses_synced() {
+    sqlite3 "$DB_FILE" "UPDATE tool_uses SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+}
+
+# Mark file changes as synced
+mark_file_changes_synced() {
+    sqlite3 "$DB_FILE" "UPDATE file_changes SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+}
+
+# Mark git operations as synced
+mark_git_ops_synced() {
+    sqlite3 "$DB_FILE" "UPDATE git_operations SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+}
+
+# Log sync operation
+log_sync() {
+    local operation="$1"
+    local records="${2:-0}"
+    local error="${3:-}"
+
+    sqlite3 "$DB_FILE" "
+        INSERT INTO sync_log (operation, records_synced, error_message)
+        VALUES ('$operation', $records, '$error');
+    "
+}
+
+# Get sync stats
+get_sync_stats() {
+    sqlite3 "$DB_FILE" "
+        SELECT
+            (SELECT COUNT(*) FROM sessions WHERE synced = 0 OR synced IS NULL) as unsynced_sessions,
+            (SELECT COUNT(*) FROM tool_uses WHERE synced = 0 OR synced IS NULL) as unsynced_tools,
+            (SELECT COUNT(*) FROM file_changes WHERE synced = 0 OR synced IS NULL) as unsynced_files,
+            (SELECT COUNT(*) FROM git_operations WHERE synced = 0 OR synced IS NULL) as unsynced_git,
+            (SELECT last_sync FROM cloud_auth WHERE id = 1) as last_sync;
+    "
+}

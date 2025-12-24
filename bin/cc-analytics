@@ -459,13 +459,215 @@ reset_analytics() {
     fi
 }
 
+# ============================================
+# CLOUD SYNC COMMANDS
+# ============================================
+
+# Source db.sh for cloud functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="$(dirname "$SCRIPT_DIR")/lib"
+if [[ -f "$LIB_DIR/db.sh" ]]; then
+    source "$LIB_DIR/db.sh"
+elif [[ -f "$HOME/.claude/analytics/lib/db.sh" ]]; then
+    source "$HOME/.claude/analytics/lib/db.sh"
+fi
+
+# Login to cloud
+cloud_login() {
+    local api_key="$1"
+    local api_url="${2:-https://claude-analytics.vercel.app}"
+
+    if [[ -z "$api_key" ]]; then
+        echo -e "${BOLD}${CYAN}Cloud Login${NC}"
+        echo
+        echo -e "Enter your API key (from ${CYAN}$api_url/settings${NC}):"
+        read -r api_key
+    fi
+
+    if [[ -z "$api_key" ]]; then
+        echo -e "${RED}Error: API key is required${NC}"
+        exit 1
+    fi
+
+    echo -e "${DIM}Verifying API key...${NC}"
+
+    # Test the API key
+    local response=$(curl -s -w "\n%{http_code}" \
+        -H "Authorization: Bearer $api_key" \
+        "$api_url/api/analytics/summary")
+
+    local http_code=$(echo "$response" | tail -n1)
+    local body=$(echo "$response" | sed '$d')
+
+    if [[ "$http_code" == "200" ]]; then
+        # Save credentials
+        save_cloud_auth "$api_key" "$api_url"
+
+        echo -e "${GREEN}✓ Successfully logged in!${NC}"
+        echo
+        echo -e "Your analytics will now sync to the cloud."
+        echo -e "Run ${CYAN}cc-analytics sync${NC} to sync existing data."
+    else
+        echo -e "${RED}Error: Invalid API key or server error (HTTP $http_code)${NC}"
+        echo -e "${DIM}$body${NC}"
+        exit 1
+    fi
+}
+
+# Logout from cloud
+cloud_logout() {
+    if ! is_logged_in 2>/dev/null; then
+        echo -e "${YELLOW}Not logged in to cloud.${NC}"
+        return
+    fi
+
+    clear_cloud_auth
+    echo -e "${GREEN}✓ Logged out from cloud.${NC}"
+    echo -e "${DIM}Local analytics data is preserved.${NC}"
+}
+
+# Show cloud status
+cloud_status() {
+    echo -e "${BOLD}${CYAN}Cloud Sync Status${NC}"
+    echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
+    echo
+
+    if ! is_logged_in 2>/dev/null; then
+        echo -e "  Status:        ${YELLOW}Not connected${NC}"
+        echo
+        echo -e "  Run ${CYAN}cc-analytics login${NC} to connect to cloud."
+        return
+    fi
+
+    # Get auth info
+    local auth_json=$(get_cloud_auth)
+    local email=$(echo "$auth_json" | jq -r '.[0].email // "unknown"')
+    local api_url=$(echo "$auth_json" | jq -r '.[0].api_url // "unknown"')
+    local last_sync=$(echo "$auth_json" | jq -r '.[0].last_sync // "never"')
+
+    echo -e "  Status:        ${GREEN}Connected${NC}"
+    echo -e "  Email:         ${CYAN}$email${NC}"
+    echo -e "  Server:        $api_url"
+    echo -e "  Last Sync:     $last_sync"
+    echo
+
+    # Get sync stats
+    if is_sync_enabled 2>/dev/null; then
+        local stats=$(get_sync_stats)
+        local unsynced_sessions=$(echo "$stats" | cut -d'|' -f1)
+        local unsynced_tools=$(echo "$stats" | cut -d'|' -f2)
+        local unsynced_files=$(echo "$stats" | cut -d'|' -f3)
+        local unsynced_git=$(echo "$stats" | cut -d'|' -f4)
+
+        local total_unsynced=$((unsynced_sessions + unsynced_tools + unsynced_files + unsynced_git))
+
+        echo -e "${BOLD}Pending Sync:${NC}"
+        echo -e "  Sessions:      $unsynced_sessions"
+        echo -e "  Tool Uses:     $unsynced_tools"
+        echo -e "  File Changes:  $unsynced_files"
+        echo -e "  Git Ops:       $unsynced_git"
+        echo -e "  ${BOLD}Total:${NC}         ${YELLOW}$total_unsynced${NC} records"
+
+        if [[ $total_unsynced -gt 0 ]]; then
+            echo
+            echo -e "  Run ${CYAN}cc-analytics sync${NC} to sync now."
+        fi
+    fi
+}
+
+# Sync data to cloud
+cloud_sync() {
+    if ! is_logged_in 2>/dev/null; then
+        echo -e "${RED}Error: Not logged in. Run 'cc-analytics login' first.${NC}"
+        exit 1
+    fi
+
+    # Ensure sync columns exist
+    if ! is_sync_enabled 2>/dev/null; then
+        echo -e "${DIM}Migrating database for sync...${NC}"
+        migrate_for_sync 2>/dev/null
+    fi
+
+    echo -e "${BOLD}${CYAN}Syncing to Cloud${NC}"
+    echo
+
+    # Get auth info
+    local auth_json=$(get_cloud_auth)
+    local api_key=$(echo "$auth_json" | jq -r '.[0].api_key')
+    local api_url=$(echo "$auth_json" | jq -r '.[0].api_url')
+
+    # Get unsynced data
+    local sessions=$(get_unsynced_sessions)
+    local tool_uses=$(get_unsynced_tool_uses)
+    local file_changes=$(get_unsynced_file_changes)
+    local git_ops=$(get_unsynced_git_ops)
+
+    # Count records
+    local session_count=$(echo "$sessions" | jq -r 'length // 0' 2>/dev/null || echo "0")
+    local tool_count=$(echo "$tool_uses" | jq -r 'length // 0' 2>/dev/null || echo "0")
+    local file_count=$(echo "$file_changes" | jq -r 'length // 0' 2>/dev/null || echo "0")
+    local git_count=$(echo "$git_ops" | jq -r 'length // 0' 2>/dev/null || echo "0")
+
+    local total=$((session_count + tool_count + file_count + git_count))
+
+    if [[ $total -eq 0 ]]; then
+        echo -e "${GREEN}✓ Everything is synced!${NC}"
+        return
+    fi
+
+    echo -e "  Syncing $session_count sessions, $tool_count tool uses, $file_count file changes, $git_count git ops..."
+    echo
+
+    # Build payload
+    local payload=$(jq -n \
+        --argjson sessions "$sessions" \
+        --argjson tool_uses "$tool_uses" \
+        --argjson file_changes "$file_changes" \
+        --argjson git_operations "$git_ops" \
+        '{sessions: $sessions, tool_uses: $tool_uses, file_changes: $file_changes, git_operations: $git_operations}')
+
+    # Send to API
+    local response=$(curl -s -w "\n%{http_code}" \
+        -X POST \
+        -H "Authorization: Bearer $api_key" \
+        -H "Content-Type: application/json" \
+        -d "$payload" \
+        "$api_url/api/sync")
+
+    local http_code=$(echo "$response" | tail -n1)
+    local body=$(echo "$response" | sed '$d')
+
+    if [[ "$http_code" == "200" ]]; then
+        # Mark as synced
+        mark_sessions_synced
+        mark_tool_uses_synced
+        mark_file_changes_synced
+        mark_git_ops_synced
+        update_last_sync
+
+        local synced=$(echo "$body" | jq -r '.synced')
+        echo -e "${GREEN}✓ Sync complete!${NC}"
+        echo -e "  Sessions:      $(echo "$synced" | jq -r '.sessions // 0')"
+        echo -e "  Tool Uses:     $(echo "$synced" | jq -r '.tool_uses // 0')"
+        echo -e "  File Changes:  $(echo "$synced" | jq -r '.file_changes // 0')"
+        echo -e "  Git Ops:       $(echo "$synced" | jq -r '.git_operations // 0')"
+
+        log_sync "sync_complete" "$total"
+    else
+        echo -e "${RED}Sync failed (HTTP $http_code)${NC}"
+        echo -e "${DIM}$body${NC}"
+        log_sync "sync_error" "0" "HTTP $http_code"
+        exit 1
+    fi
+}
+
 # Show help
 show_help() {
     echo -e "${BOLD}Claude Code Analytics CLI${NC}"
     echo
     echo -e "${BOLD}Usage:${NC} cc-analytics <command> [options]"
     echo
-    echo -e "${BOLD}Commands:${NC}"
+    echo -e "${BOLD}Local Analytics:${NC}"
     echo -e "  ${GREEN}summary${NC}            Show overview dashboard (default)"
     echo -e "  ${GREEN}sessions${NC} [n]       List recent sessions (default: 10)"
     echo -e "  ${GREEN}tools${NC} [days]       Show tool usage breakdown (default: 7 days)"
@@ -478,13 +680,21 @@ show_help() {
     echo -e "  ${GREEN}projects${NC}           Show projects by activity"
     echo -e "  ${GREEN}export${NC} [file]      Export data to JSON"
     echo -e "  ${GREEN}reset${NC}              Clear all analytics data"
+    echo
+    echo -e "${BOLD}Cloud Sync:${NC}"
+    echo -e "  ${GREEN}login${NC} [key]        Login to cloud with API key"
+    echo -e "  ${GREEN}logout${NC}             Logout from cloud"
+    echo -e "  ${GREEN}status${NC}             Show cloud connection status"
+    echo -e "  ${GREEN}sync${NC}               Sync local data to cloud"
+    echo
+    echo -e "${BOLD}Other:${NC}"
     echo -e "  ${GREEN}help${NC}               Show this help message"
     echo
     echo -e "${BOLD}Examples:${NC}"
     echo -e "  cc-analytics                    # Show summary"
     echo -e "  cc-analytics sessions 20        # Show last 20 sessions"
-    echo -e "  cc-analytics tools 30           # Show tool usage for last 30 days"
-    echo -e "  cc-analytics export data.json   # Export to data.json"
+    echo -e "  cc-analytics login sk_abc123    # Login with API key"
+    echo -e "  cc-analytics sync               # Sync to cloud"
     echo
     echo -e "${DIM}Database location: $DB_FILE${NC}"
 }
@@ -526,6 +736,18 @@ case "${1:-summary}" in
         ;;
     reset)
         reset_analytics
+        ;;
+    login)
+        cloud_login "${2:-}" "${3:-}"
+        ;;
+    logout)
+        cloud_logout
+        ;;
+    status|cloud)
+        cloud_status
+        ;;
+    sync)
+        cloud_sync
         ;;
     help|h|-h|--help)
         show_help

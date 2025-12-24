@@ -1,0 +1,103 @@
+# Claude Code Instructions
+
+This file provides instructions for Claude Code when working on this project.
+
+## Project Overview
+
+Claude Code Analytics is an open-source tool for tracking Claude Code usage locally, with an optional paid SaaS tier for teams.
+
+## Current Status
+
+**Phase:** 1 - Backend Setup
+**Progress:** Not started
+
+Always check `PLAN.md` for the current phase and progress before starting work.
+
+## How to Work on This Project
+
+### Before Starting Any Work
+
+1. Read `PLAN.md` to understand current phase and checklist
+2. Check which tasks are completed (marked with `[x]`)
+3. Start with the next uncompleted task
+
+### When Completing a Task
+
+1. Mark the task as complete in `PLAN.md` by changing `[ ]` to `[x]`
+2. Update the "Last Updated" date at the top of `PLAN.md`
+3. If completing a phase, update the phase status from 🔴 to 🟢
+
+### Phase Status Indicators
+
+- 🔴 Not Started
+- 🟡 In Progress
+- 🟢 Completed
+
+### When Starting a New Phase
+
+1. Update the "Current Phase" in `PLAN.md`
+2. Change the phase status to 🟡 In Progress
+3. Announce to user: "Starting Phase X: [Phase Name]"
+
+### When Completing a Phase
+
+1. Mark all checklist items as `[x]`
+2. Change phase status to 🟢 Completed
+3. Update "Current Phase" to next phase
+4. Announce: "Phase X completed. Ready for Phase Y."
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `PLAN.md` | Master plan with phases and checklists |
+| `CLAUDE.md` | These instructions (you are here) |
+| `README.md` | Public documentation |
+| `bin/cc-analytics` | CLI tool |
+| `hooks/analytics-hook.sh` | Claude Code hook |
+| `lib/db.sh` | Database functions |
+| `web/` | Next.js SaaS app (to be created) |
+
+## Tech Stack
+
+- **CLI:** Bash + SQLite
+- **Web:** Next.js + TypeScript + Tailwind + shadcn/ui
+- **Database:** Supabase (Postgres)
+- **Auth:** Supabase Auth
+- **Billing:** Stripe
+- **Hosting:** Vercel
+
+## Commands Reference
+
+```bash
+# Run CLI locally
+./bin/cc-analytics
+
+# Start web dev server (once created)
+cd web && npm run dev
+
+# Deploy to Vercel
+cd web && vercel
+```
+
+## Important Notes
+
+1. **Always update PLAN.md** when completing tasks
+2. **Test locally** before marking tasks complete
+3. **Commit frequently** with descriptive messages
+4. **Keep costs low** - use free tiers where possible
+5. **Privacy first** - local data stays local unless user opts into sync
+
+## Git Workflow
+
+1. Work on `main` branch for now (MVP phase)
+2. Commit after completing each task
+3. Push to GitHub after completing each phase
+4. Create releases for major milestones
+
+## Questions?
+
+If unclear about implementation details:
+1. Check `PLAN.md` for specifics
+2. Ask the user for clarification
+3. Document decisions in the Notes section of `PLAN.md`
