@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { createBrowserClient } from '@supabase/ssr'
 import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
@@ -44,14 +45,9 @@ export function Navbar({ user, profile }: NavbarProps) {
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-700 bg-slate-800/80 backdrop-blur">
       <div className="flex h-14 items-center px-4 justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-              CC
-            </div>
-            <span className="font-semibold text-white">Claude Analytics</span>
-          </div>
-        </div>
+        <Link href="/dashboard" className="font-semibold text-white hover:text-blue-400 transition-colors">
+          Claude Analytics
+        </Link>
 
         <div className="flex items-center gap-4">
           <DropdownMenu>

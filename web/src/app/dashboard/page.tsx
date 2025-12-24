@@ -4,7 +4,7 @@ import { SummaryCards } from '@/components/analytics/SummaryCards'
 import { ToolUsageChart } from '@/components/analytics/ToolUsageChart'
 import { RecentActivity } from '@/components/analytics/RecentActivity'
 
-interface ToolUse { tool_name: string }
+interface ToolUse { tool_name: string; success: boolean }
 interface FileChange { lines_added: number; lines_removed: number }
 interface Session { id: string; start_time: string; end_time: string | null; project_name: string | null }
 
@@ -55,6 +55,10 @@ async function getAnalytics(supabase: any, userId: string) {
   // Count MCP calls
   const mcpCalls = ((toolUses || []) as ToolUse[]).filter(t => t.tool_name.startsWith('mcp__')).length
 
+  // Calculate success rate
+  const successCount = ((toolUses || []) as ToolUse[]).filter(t => t.success).length
+  const successRate = toolUses?.length > 0 ? Math.round((successCount / toolUses.length) * 100) : 100
+
   return {
     totalSessions: sessions?.length || 0,
     totalToolUses: toolUses?.length || 0,
@@ -66,6 +70,7 @@ async function getAnalytics(supabase: any, userId: string) {
     toolBreakdown,
     recentSessions: sessions?.slice(0, 5) || [],
     mcpCalls,
+    successRate,
   }
 }
 
@@ -115,6 +120,7 @@ export default async function DashboardPage() {
         gitOps={analytics.totalGitOps}
         uniqueFiles={analytics.uniqueFiles}
         mcpCalls={analytics.mcpCalls}
+        successRate={analytics.successRate}
       />
 
       <div className="grid gap-6 md:grid-cols-2">

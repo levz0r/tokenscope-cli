@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Activity, FileCode, GitBranch, Plus, Minus, Folder, Plug } from 'lucide-react'
+import { Activity, FileCode, GitBranch, Plus, Minus, Folder, Plug, CheckCircle } from 'lucide-react'
 
 interface SummaryCardsProps {
   sessions: number
@@ -11,6 +11,7 @@ interface SummaryCardsProps {
   gitOps: number
   uniqueFiles: number
   mcpCalls?: number
+  successRate?: number
 }
 
 export function SummaryCards({
@@ -21,6 +22,7 @@ export function SummaryCards({
   gitOps,
   uniqueFiles,
   mcpCalls = 0,
+  successRate = 100,
 }: SummaryCardsProps) {
   const cards = [
     {
@@ -72,10 +74,17 @@ export function SummaryCards({
       description: 'External integrations',
       color: 'text-cyan-400',
     },
+    {
+      title: 'Success Rate',
+      value: `${successRate}%`,
+      icon: CheckCircle,
+      description: 'Tool call success',
+      color: successRate >= 95 ? 'text-green-400' : successRate >= 80 ? 'text-yellow-400' : 'text-red-400',
+    },
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
         <Card key={card.title} className="border-slate-700 bg-slate-800/50">
           <CardHeader className="flex flex-row items-start justify-between pb-2 h-14">
