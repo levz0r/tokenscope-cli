@@ -4,16 +4,20 @@ import { ActivityHeatmap } from '@/components/analytics/ActivityHeatmap'
 import { HourlyChart } from '@/components/analytics/HourlyChart'
 import { Clock, Calendar, Sun, Moon } from 'lucide-react'
 
+interface ToolUseTime { timestamp: string }
+
 async function getTimeStats(userId: string) {
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
 
   // Get all tool uses with timestamps
-  const { data: toolUses } = await supabase
+  const { data: toolUsesData } = await supabase
     .from('tool_uses')
     .select('timestamp, sessions!inner(user_id)')
     .eq('sessions.user_id', userId)
 
-  if (!toolUses) return { hourly: [], daily: [], stats: { peakHour: 0, peakDay: '', totalHours: 0 } }
+  const toolUses = (toolUsesData || []) as ToolUseTime[]
+  if (toolUses.length === 0) return { hourly: [], daily: [], stats: { peakHour: 0, peakDay: 'N/A', totalDays: 0, morningActivity: 0, afternoonActivity: 0, eveningActivity: 0, nightActivity: 0 } }
 
   // Aggregate by hour
   const hourlyMap = new Map<number, number>()

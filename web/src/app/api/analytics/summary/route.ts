@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
+interface Session {
+  id: string
+  start_time: string
+  end_time: string | null
+}
+
+interface FileChange {
+  lines_added: number
+  lines_removed: number
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -10,21 +21,26 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('Authorization')
     let userId: string
 
+    const db = createAdminClient()
+
     if (authHeader?.startsWith('Bearer ')) {
       const apiKey = authHeader.substring(7)
-      const adminClient = createAdminClient()
 
-      const { data: userData, error: userError } = await adminClient
-        .rpc('get_user_by_api_key', { key: apiKey })
+      // Look up user by API key in profiles table
+      const { data: profiles } = await db
+        .from('profiles')
+        .select('id')
+        .eq('api_key', apiKey)
+        .limit(1) as { data: { id: string }[] | null }
 
-      if (userError || !userData || userData.length === 0) {
+      if (!profiles || profiles.length === 0) {
         return NextResponse.json(
           { error: 'Invalid API key' },
           { status: 401 }
         )
       }
 
-      userId = userData[0].user_id
+      userId = profiles[0].id
     } else {
       // Session-based auth (for web dashboard)
       const supabase = await createClient()
@@ -40,20 +56,64 @@ export async function GET(request: NextRequest) {
       userId = user.id
     }
 
-    // Use admin client to call the function
-    const adminClient = createAdminClient()
-    const { data, error } = await adminClient
-      .rpc('get_user_analytics_summary', {
-        target_user_id: userId,
-        days_back: days,
-      })
+    // Calculate date range
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
 
-    if (error) {
-      console.error('Analytics error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch analytics' },
-        { status: 500 }
-      )
+    // Get sessions
+    const { data: sessionsData } = await db
+      .from('sessions')
+      .select('id, start_time, end_time')
+      .eq('user_id', userId)
+      .gte('start_time', startDate.toISOString())
+
+    const sessions = (sessionsData || []) as Session[]
+    const sessionIds = sessions.map(s => s.id)
+
+    // Get tool uses
+    const { count: toolUsesCount } = sessionIds.length > 0
+      ? await db
+          .from('tool_uses')
+          .select('*', { count: 'exact', head: true })
+          .in('session_id', sessionIds)
+      : { count: 0 }
+
+    // Get file changes
+    const { data: fileChangesData } = sessionIds.length > 0
+      ? await db
+          .from('file_changes')
+          .select('lines_added, lines_removed')
+          .in('session_id', sessionIds)
+      : { data: [] }
+
+    const fileChanges = (fileChangesData || []) as FileChange[]
+
+    // Get git operations
+    const { count: gitOpsCount } = sessionIds.length > 0
+      ? await db
+          .from('git_operations')
+          .select('*', { count: 'exact', head: true })
+          .in('session_id', sessionIds)
+      : { count: 0 }
+
+    // Calculate stats
+    const totalDurationMinutes = sessions.reduce((sum, s) => {
+      const start = new Date(s.start_time)
+      const end = s.end_time ? new Date(s.end_time) : new Date()
+      return sum + (end.getTime() - start.getTime()) / 60000
+    }, 0)
+
+    const linesAdded = fileChanges.reduce((sum, f) => sum + (f.lines_added || 0), 0)
+    const linesRemoved = fileChanges.reduce((sum, f) => sum + (f.lines_removed || 0), 0)
+
+    const data = {
+      total_sessions: sessions.length,
+      total_tool_uses: toolUsesCount || 0,
+      total_file_changes: fileChanges.length,
+      total_git_operations: gitOpsCount || 0,
+      total_duration_minutes: Math.round(totalDurationMinutes),
+      lines_added: linesAdded,
+      lines_removed: linesRemoved,
     }
 
     return NextResponse.json({
@@ -61,7 +121,7 @@ export async function GET(request: NextRequest) {
       data,
       period: {
         days,
-        from: new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString(),
+        from: startDate.toISOString(),
         to: new Date().toISOString(),
       },
     })

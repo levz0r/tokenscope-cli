@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Activity, FileCode, GitBranch, Plus, Minus, Folder } from 'lucide-react'
+import { Activity, FileCode, GitBranch, Plus, Minus, Folder, Plug } from 'lucide-react'
 
 interface SummaryCardsProps {
   sessions: number
@@ -10,6 +10,7 @@ interface SummaryCardsProps {
   linesRemoved: number
   gitOps: number
   uniqueFiles: number
+  mcpCalls?: number
 }
 
 export function SummaryCards({
@@ -19,6 +20,7 @@ export function SummaryCards({
   linesRemoved,
   gitOps,
   uniqueFiles,
+  mcpCalls = 0,
 }: SummaryCardsProps) {
   const cards = [
     {
@@ -63,21 +65,28 @@ export function SummaryCards({
       description: 'Commits, pushes, etc.',
       color: 'text-orange-400',
     },
+    {
+      title: 'MCP Calls',
+      value: mcpCalls,
+      icon: Plug,
+      description: 'External integrations',
+      color: 'text-cyan-400',
+    },
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
       {cards.map((card) => (
         <Card key={card.title} className="border-slate-700 bg-slate-800/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardHeader className="flex flex-row items-start justify-between pb-2 h-14">
             <CardTitle className="text-sm font-medium text-slate-400">
               {card.title}
             </CardTitle>
-            <card.icon className={`h-4 w-4 ${card.color}`} />
+            <card.icon className={`h-4 w-4 ${card.color} shrink-0`} />
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${card.color}`}>{card.value}</div>
-            <p className="text-xs text-slate-500">{card.description}</p>
+            <p className="text-xs text-slate-500 truncate">{card.description}</p>
           </CardContent>
         </Card>
       ))}

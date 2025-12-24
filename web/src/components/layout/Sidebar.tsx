@@ -9,6 +9,7 @@ import {
   FileCode,
   Clock,
   GitBranch,
+  Plug,
   Users,
   Settings,
 } from 'lucide-react'
@@ -38,6 +39,11 @@ const navigation = [
     name: 'Git',
     href: '/dashboard/git',
     icon: GitBranch,
+  },
+  {
+    name: 'MCP',
+    href: '/dashboard/mcp',
+    icon: Plug,
   },
 ]
 

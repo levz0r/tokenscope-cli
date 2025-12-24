@@ -15,13 +15,13 @@ export async function GET() {
     }
 
     const adminClient = createAdminClient()
-    const { data: profile, error: profileError } = await adminClient
+    const { data: profiles } = await adminClient
       .from('profiles')
       .select('api_key, email')
       .eq('id', user.id)
-      .single()
+      .limit(1) as { data: { api_key: string; email: string }[] | null }
 
-    if (profileError || !profile) {
+    if (!profiles || profiles.length === 0) {
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 404 }
@@ -29,8 +29,8 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      api_key: profile.api_key,
-      email: profile.email,
+      api_key: profiles[0].api_key,
+      email: profiles[0].email,
     })
   } catch (error) {
     console.error('API key fetch error:', error)
@@ -58,7 +58,8 @@ export async function POST() {
     const newKey = [...Array(48)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')
 
     const adminClient = createAdminClient()
-    const { error: updateError } = await adminClient
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (adminClient as any)
       .from('profiles')
       .update({
         api_key: newKey,

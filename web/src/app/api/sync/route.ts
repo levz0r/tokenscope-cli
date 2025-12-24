@@ -54,20 +54,34 @@ export async function POST(request: NextRequest) {
     }
 
     const apiKey = authHeader.substring(7)
-    const supabase = createAdminClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supabase = createAdminClient() as any
 
     // Look up user by API key
-    const { data: userData, error: userError } = await supabase
-      .rpc('get_user_by_api_key', { key: apiKey })
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('api_key', apiKey)
+      .limit(1)
 
-    if (userError || !userData || userData.length === 0) {
+    if (!profiles || profiles.length === 0) {
       return NextResponse.json(
         { error: 'Invalid API key' },
         { status: 401 }
       )
     }
 
-    const { user_id, team_id } = userData[0]
+    const user_id = profiles[0].id
+
+    // Get user's team (if any)
+    const { data: membership } = await supabase
+      .from('team_members')
+      .select('team_id')
+      .eq('user_id', user_id)
+      .eq('role', 'owner')
+      .limit(1)
+
+    const team_id = membership?.[0]?.team_id || null
 
     // Parse request body
     const payload: SyncPayload = await request.json()

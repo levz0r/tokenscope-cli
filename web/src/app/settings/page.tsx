@@ -7,7 +7,9 @@ import { ApiKeySection } from '@/components/settings/ApiKeySection'
 import { AccountSection } from '@/components/settings/AccountSection'
 
 export default async function SettingsPage() {
-  const supabase = await createClient()
+  const supabaseAuth = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = supabaseAuth as any
 
   const {
     data: { user },

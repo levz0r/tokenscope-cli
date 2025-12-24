@@ -3,17 +3,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GitTable } from '@/components/analytics/GitTable'
 import { GitBranch, GitCommit, GitMerge, GitPullRequest } from 'lucide-react'
 
-async function getGitStats(userId: string) {
-  const supabase = await createClient()
+interface GitOp {
+  id: string
+  operation_type: string
+  command: string | null
+  timestamp: string
+  exit_code: number
+  sessions?: { project_name: string | null }
+}
 
-  const { data: gitOps, error } = await supabase
+async function getGitStats(userId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+
+  const { data: gitOpsData } = await supabase
     .from('git_operations')
     .select('*, sessions!inner(user_id, project_name)')
     .eq('sessions.user_id', userId)
     .order('timestamp', { ascending: false })
     .limit(100)
 
-  if (!gitOps) return { operations: [], stats: { commits: 0, pushes: 0, pulls: 0, other: 0 } }
+  const gitOps = (gitOpsData || []) as GitOp[]
+  if (gitOps.length === 0) return { operations: [], stats: { commits: 0, pushes: 0, pulls: 0, branches: 0, merges: 0, other: 0 } }
 
   // Count by operation type - check both operation_type and command
   const stats = {
@@ -57,7 +68,7 @@ async function getGitStats(userId: string) {
   return {
     operations: gitOps.map(op => ({
       ...op,
-      project_name: op.sessions?.project_name,
+      project_name: op.sessions?.project_name ?? null,
     })),
     stats,
   }

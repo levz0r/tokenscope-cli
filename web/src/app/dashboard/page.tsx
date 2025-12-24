@@ -1,12 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { SupabaseClient } from '@supabase/supabase-js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { SummaryCards } from '@/components/analytics/SummaryCards'
 import { ToolUsageChart } from '@/components/analytics/ToolUsageChart'
 import { RecentActivity } from '@/components/analytics/RecentActivity'
-import { Database } from '@/lib/supabase/types'
 
-async function getAnalytics(supabase: SupabaseClient<Database>, userId: string) {
+interface ToolUse { tool_name: string }
+interface FileChange { lines_added: number; lines_removed: number }
+interface Session { id: string; start_time: string; end_time: string | null; project_name: string | null }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getAnalytics(supabase: any, userId: string) {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
@@ -40,14 +43,17 @@ async function getAnalytics(supabase: SupabaseClient<Database>, userId: string) 
     .gte('timestamp', thirtyDaysAgo.toISOString())
 
   // Calculate stats
-  const toolBreakdown = (toolUses || []).reduce((acc, t) => {
+  const toolBreakdown = ((toolUses || []) as ToolUse[]).reduce((acc, t) => {
     acc[t.tool_name] = (acc[t.tool_name] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  const linesAdded = (fileChanges || []).reduce((sum, f) => sum + (f.lines_added || 0), 0)
-  const linesRemoved = (fileChanges || []).reduce((sum, f) => sum + (f.lines_removed || 0), 0)
-  const uniqueFiles = new Set((fileChanges || []).map(f => f.file_path)).size
+  const linesAdded = ((fileChanges || []) as FileChange[]).reduce((sum, f) => sum + (f.lines_added || 0), 0)
+  const linesRemoved = ((fileChanges || []) as FileChange[]).reduce((sum, f) => sum + (f.lines_removed || 0), 0)
+  const uniqueFiles = new Set(((fileChanges || []) as Array<{file_path: string}>).map(f => f.file_path)).size
+
+  // Count MCP calls
+  const mcpCalls = ((toolUses || []) as ToolUse[]).filter(t => t.tool_name.startsWith('mcp__')).length
 
   return {
     totalSessions: sessions?.length || 0,
@@ -59,6 +65,7 @@ async function getAnalytics(supabase: SupabaseClient<Database>, userId: string) 
     uniqueFiles,
     toolBreakdown,
     recentSessions: sessions?.slice(0, 5) || [],
+    mcpCalls,
   }
 }
 
@@ -88,6 +95,7 @@ export default async function DashboardPage() {
         linesRemoved={analytics.linesRemoved}
         gitOps={analytics.totalGitOps}
         uniqueFiles={analytics.uniqueFiles}
+        mcpCalls={analytics.mcpCalls}
       />
 
       <div className="grid gap-6 md:grid-cols-2">

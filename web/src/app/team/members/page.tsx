@@ -1,56 +1,84 @@
-import { createClient } from '@/lib/supabase/server'
+import { getServerAuth } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Users, Plus, Mail, Crown, Shield, User, MoreVertical } from 'lucide-react'
 
-async function getTeamMembers(userId: string) {
-  const supabase = await createClient()
+interface TeamMember {
+  id: string
+  email: string
+  name: string | null
+  role: 'owner' | 'admin' | 'member'
+  joined: string
+}
 
-  // Get user's team where they are owner/admin
-  const { data: membership } = await supabase
+interface TeamData {
+  team: { id: string; name: string } | null
+  members: TeamMember[]
+  userRole: 'owner' | 'admin' | 'member' | null
+}
+
+interface MembershipData {
+  team_id: string
+  role: string
+}
+
+interface MemberRow {
+  role: string
+  created_at: string
+  user_id: string
+  profiles: { id: string; email: string; name: string | null } | null
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getTeamMembers(
+  userId: string,
+  db: any
+): Promise<TeamData> {
+  // Get user's team membership where they have admin/owner rights
+  const { data: membershipData } = await db
     .from('team_members')
-    .select(`
-      role,
-      team_id,
-      teams (
-        id,
-        name
-      )
-    `)
+    .select('team_id, role')
     .eq('user_id', userId)
     .in('role', ['owner', 'admin'])
+    .limit(1)
     .single()
 
+  const membership = membershipData as MembershipData | null
   if (!membership) {
     return { team: null, members: [], userRole: null }
   }
 
-  const team = membership.teams as { id: string; name: string }
+  // Get team details
+  const { data: team } = await db
+    .from('teams')
+    .select('id, name')
+    .eq('id', membership.team_id)
+    .single()
 
-  // Get all members of this team
-  const { data: members } = await supabase
+  if (!team) {
+    return { team: null, members: [], userRole: null }
+  }
+
+  // Get all team members
+  const { data: membersData } = await db
     .from('team_members')
-    .select(`
-      role,
-      created_at,
-      profiles (
-        id,
-        email,
-        name
-      )
-    `)
+    .select('role, created_at, user_id, profiles(id, email, name)')
     .eq('team_id', team.id)
     .order('created_at', { ascending: true })
 
+  const teamMembers: TeamMember[] = ((membersData || []) as MemberRow[]).map(m => ({
+    id: m.profiles?.id || m.user_id,
+    email: m.profiles?.email || '',
+    name: m.profiles?.name || null,
+    role: m.role as 'owner' | 'admin' | 'member',
+    joined: m.created_at,
+  }))
+
   return {
     team,
-    members: members?.map(m => ({
-      ...m.profiles,
-      role: m.role,
-      joined: m.created_at,
-    })) || [],
-    userRole: membership.role,
+    members: teamMembers,
+    userRole: membership.role as 'owner' | 'admin' | 'member',
   }
 }
 
@@ -81,12 +109,11 @@ function getRoleBadge(role: string) {
 }
 
 export default async function TeamMembersPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, db } = await getServerAuth()
 
-  if (!user) return null
+  if (!user || !db) return null
 
-  const { team, members, userRole } = await getTeamMembers(user.id)
+  const { team, members, userRole } = await getTeamMembers(user.id, db)
 
   if (!team) {
     return (

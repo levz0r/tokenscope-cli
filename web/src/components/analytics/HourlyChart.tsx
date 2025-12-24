@@ -59,7 +59,7 @@ export function HourlyChart({ data }: HourlyChartProps) {
             color: '#f1f5f9',
           }}
           labelFormatter={(label) => `Time: ${label}`}
-          formatter={(value: number) => [value.toLocaleString(), 'Tool calls']}
+          formatter={(value) => [(value as number).toLocaleString(), 'Tool calls']}
         />
         <Bar dataKey="count" radius={[4, 4, 0, 0]}>
           {data.map((entry, index) => (

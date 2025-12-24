@@ -1,49 +1,73 @@
-import { createClient } from '@/lib/supabase/server'
+import { getServerAuth } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, Plus, Building2, Crown } from 'lucide-react'
+import { Users, Building2, Crown } from 'lucide-react'
 import Link from 'next/link'
+import { CreateTeamButton } from '@/components/team/CreateTeamButton'
 
-async function getTeamData(userId: string) {
-  const supabase = await createClient()
+interface Team {
+  id: string
+  name: string
+  created_at: string
+  role: string
+  memberCount: number
+  sessionCount: number
+}
 
+interface MembershipData {
+  role: string
+  team_id: string
+}
+
+interface TeamRow {
+  id: string
+  name: string
+  created_at: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getTeamData(userId: string, db: any) {
   // Get user's team memberships
-  const { data: memberships } = await supabase
+  const { data: membershipsData, error: membershipError } = await db
     .from('team_members')
-    .select(`
-      role,
-      teams (
-        id,
-        name,
-        created_at
-      )
-    `)
+    .select('role, team_id')
     .eq('user_id', userId)
 
-  if (!memberships || memberships.length === 0) {
+  const memberships = (membershipsData || []) as MembershipData[]
+  if (membershipError || !memberships.length) {
     return { teams: [], isOwner: false }
   }
 
-  // Get team member counts and stats
-  const teams = await Promise.all(
-    memberships.map(async (m) => {
-      const team = m.teams as { id: string; name: string; created_at: string }
+  // Get teams with counts
+  const teamIds = memberships.map(m => m.team_id)
+  const { data: teamsData } = await db
+    .from('teams')
+    .select('id, name, created_at')
+    .in('id', teamIds)
 
-      // Get member count
-      const { count: memberCount } = await supabase
+  const teams = (teamsData || []) as TeamRow[]
+  if (!teams.length) {
+    return { teams: [], isOwner: false }
+  }
+
+  // Get member counts for each team
+  const teamsWithStats: Team[] = await Promise.all(
+    teams.map(async (team) => {
+      const membership = memberships.find(m => m.team_id === team.id)
+
+      const { count: memberCount } = await db
         .from('team_members')
         .select('*', { count: 'exact', head: true })
         .eq('team_id', team.id)
 
-      // Get team sessions count
-      const { count: sessionCount } = await supabase
+      const { count: sessionCount } = await db
         .from('sessions')
         .select('*', { count: 'exact', head: true })
         .eq('team_id', team.id)
 
       return {
         ...team,
-        role: m.role,
+        role: membership?.role || 'member',
         memberCount: memberCount || 0,
         sessionCount: sessionCount || 0,
       }
@@ -51,18 +75,17 @@ async function getTeamData(userId: string) {
   )
 
   return {
-    teams,
+    teams: teamsWithStats,
     isOwner: memberships.some(m => m.role === 'owner'),
   }
 }
 
 export default async function TeamPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, db } = await getServerAuth()
 
-  if (!user) return null
+  if (!user || !db) return null
 
-  const { teams, isOwner } = await getTeamData(user.id)
+  const { teams } = await getTeamData(user.id, db)
 
   return (
     <div className="space-y-6">
@@ -71,10 +94,7 @@ export default async function TeamPage() {
           <h1 className="text-2xl font-bold text-white">Team</h1>
           <p className="text-slate-400">Manage your team and view aggregated analytics</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Team
-        </Button>
+        <CreateTeamButton />
       </div>
 
       {teams.length === 0 ? (
@@ -86,10 +106,7 @@ export default async function TeamPage() {
               Create a team to share analytics with your colleagues and managers.
               Team members can view aggregated statistics across all members.
             </p>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Your First Team
-            </Button>
+            <CreateTeamButton variant="large" />
           </CardContent>
         </Card>
       ) : (

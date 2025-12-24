@@ -3,8 +3,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SessionsTable } from '@/components/analytics/SessionsTable'
 import { formatDistanceToNow } from 'date-fns'
 
-async function getSessions(userId: string) {
-  const supabase = await createClient()
+interface SessionData {
+  id: string
+  local_session_id: string
+  project_name: string | null
+  start_time: string
+  end_time: string | null
+  source: string | null
+  reason: string | null
+  tool_uses: { count: number }[]
+  file_changes: { count: number }[]
+  git_operations: { count: number }[]
+}
+
+async function getSessions(userId: string): Promise<SessionData[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
 
   const { data: sessions } = await supabase
     .from('sessions')
@@ -18,7 +32,7 @@ async function getSessions(userId: string) {
     .order('start_time', { ascending: false })
     .limit(100)
 
-  return sessions || []
+  return (sessions || []) as SessionData[]
 }
 
 export default async function SessionsPage() {

@@ -3,17 +3,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FilesTable } from '@/components/analytics/FilesTable'
 import { FileCode, FilePlus, FileMinus, FolderTree } from 'lucide-react'
 
+interface FileChange {
+  file_path: string
+  lines_added: number
+  lines_removed: number
+  timestamp: string
+}
+
 async function getFileStats(userId: string) {
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
 
   // Get all file changes
-  const { data: fileChanges } = await supabase
+  const { data: fileChangesData } = await supabase
     .from('file_changes')
     .select('*, sessions!inner(user_id)')
     .eq('sessions.user_id', userId)
     .order('timestamp', { ascending: false })
 
-  if (!fileChanges) return { files: [], stats: { total: 0, added: 0, removed: 0, uniqueFiles: 0 } }
+  const fileChanges = (fileChangesData || []) as FileChange[]
+  if (fileChanges.length === 0) return { files: [], stats: { total: 0, added: 0, removed: 0, uniqueFiles: 0 } }
 
   // Aggregate by file path
   const fileMap = new Map<string, {
