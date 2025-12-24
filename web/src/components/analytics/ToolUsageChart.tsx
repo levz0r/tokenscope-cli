@@ -37,7 +37,7 @@ export function ToolUsageChart({ data }: ToolUsageChartProps) {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data} layout="vertical" margin={{ left: 0, right: 20 }}>
+      <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
         <XAxis type="number" stroke="#64748b" fontSize={12} />
         <YAxis
@@ -45,7 +45,8 @@ export function ToolUsageChart({ data }: ToolUsageChartProps) {
           dataKey="name"
           stroke="#64748b"
           fontSize={12}
-          width={60}
+          width={100}
+          tickFormatter={(value) => value.length > 12 ? `${value.slice(0, 12)}...` : value}
         />
         <Tooltip
           contentStyle={{

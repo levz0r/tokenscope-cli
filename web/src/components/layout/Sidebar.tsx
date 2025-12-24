@@ -11,6 +11,7 @@ import {
   GitBranch,
   Plug,
   FolderKanban,
+  Lightbulb,
   Users,
   Settings,
 } from 'lucide-react'
@@ -45,6 +46,11 @@ const navigation = [
     name: 'Projects',
     href: '/dashboard/projects',
     icon: FolderKanban,
+  },
+  {
+    name: 'Insights',
+    href: '/dashboard/insights',
+    icon: Lightbulb,
   },
   {
     name: 'MCP',

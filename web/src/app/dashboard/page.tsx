@@ -69,6 +69,24 @@ async function getAnalytics(supabase: any, userId: string) {
   }
 }
 
+function formatToolName(name: string): string {
+  // MCP tools: mcp__plugin_linear_linear__list_issues -> Linear: list_issues
+  if (name.startsWith('mcp__')) {
+    const parts = name.split('__')
+    if (parts.length >= 3) {
+      const serverPart = parts[1] // e.g., "plugin_linear_linear"
+      const toolPart = parts.slice(2).join('__') // e.g., "list_issues"
+      // Extract readable server name
+      const serverName = serverPart
+        .replace('plugin_', '')
+        .split('_')[0] // Take first part: "linear"
+      const capitalizedServer = serverName.charAt(0).toUpperCase() + serverName.slice(1)
+      return `${capitalizedServer}: ${toolPart}`
+    }
+  }
+  return name
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -78,8 +96,9 @@ export default async function DashboardPage() {
   const analytics = await getAnalytics(supabase, user.id)
 
   const toolData = Object.entries(analytics.toolBreakdown)
-    .map(([name, count]) => ({ name, count }))
+    .map(([name, count]) => ({ name: formatToolName(name), count }))
     .sort((a, b) => b.count - a.count)
+    .slice(0, 10) // Show top 10 tools
 
   return (
     <div className="space-y-6">
