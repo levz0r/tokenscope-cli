@@ -8,20 +8,15 @@ interface Session {
   project_name: string | null
   start_time: string
   end_time: string | null
-}
-
-interface ToolUse {
-  session_id: string
+  tool_uses: { count: number }[]
+  file_changes: { count: number }[]
+  git_operations: { count: number }[]
 }
 
 interface FileChange {
   session_id: string
   lines_added: number
   lines_removed: number
-}
-
-interface GitOp {
-  session_id: string
 }
 
 interface ProjectStats {
@@ -43,10 +38,15 @@ async function getProjectStats(userId: string): Promise<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
 
-  // Get all sessions with project names
+  // Get all sessions with project names and counts (uses Supabase aggregation, no 1000 limit)
   const { data: sessionsData } = await supabase
     .from('sessions')
-    .select('id, project_name, start_time, end_time')
+    .select(`
+      id, project_name, start_time, end_time,
+      tool_uses(count),
+      file_changes(count),
+      git_operations(count)
+    `)
     .eq('user_id', userId)
     .order('start_time', { ascending: false })
 
@@ -57,29 +57,14 @@ async function getProjectStats(userId: string): Promise<{
 
   const sessionIds = sessions.map(s => s.id)
 
-  // Get tool uses for these sessions
-  const { data: toolUsesData } = await supabase
-    .from('tool_uses')
-    .select('session_id')
-    .in('session_id', sessionIds)
-
-  const toolUses = (toolUsesData || []) as ToolUse[]
-
-  // Get file changes for these sessions
+  // Get file changes for line counts (limited sample for aggregation)
   const { data: fileChangesData } = await supabase
     .from('file_changes')
     .select('session_id, lines_added, lines_removed')
     .in('session_id', sessionIds)
+    .limit(10000)
 
   const fileChanges = (fileChangesData || []) as FileChange[]
-
-  // Get git operations for these sessions
-  const { data: gitOpsData } = await supabase
-    .from('git_operations')
-    .select('session_id')
-    .in('session_id', sessionIds)
-
-  const gitOps = (gitOpsData || []) as GitOp[]
 
   // Group by project
   const projectMap = new Map<string, {
@@ -91,7 +76,7 @@ async function getProjectStats(userId: string): Promise<{
     gitOps: number
   }>()
 
-  // Initialize projects from sessions
+  // Initialize projects from sessions and aggregate counts
   for (const session of sessions) {
     const projectName = session.project_name || 'Unknown Project'
     if (!projectMap.has(projectName)) {
@@ -104,39 +89,27 @@ async function getProjectStats(userId: string): Promise<{
         gitOps: 0,
       })
     }
-    projectMap.get(projectName)!.sessions.push(session)
+    const project = projectMap.get(projectName)!
+    project.sessions.push(session)
+    // Use aggregated counts from session query (no 1000 limit)
+    project.toolUses += session.tool_uses?.[0]?.count || 0
+    project.fileChanges += session.file_changes?.[0]?.count || 0
+    project.gitOps += session.git_operations?.[0]?.count || 0
   }
 
-  // Create session to project mapping
+  // Create session to project mapping for line counts
   const sessionToProject = new Map<string, string>()
   for (const session of sessions) {
     sessionToProject.set(session.id, session.project_name || 'Unknown Project')
   }
 
-  // Count tool uses per project
-  for (const tu of toolUses) {
-    const projectName = sessionToProject.get(tu.session_id)
-    if (projectName && projectMap.has(projectName)) {
-      projectMap.get(projectName)!.toolUses++
-    }
-  }
-
-  // Count file changes per project
+  // Aggregate line counts per project
   for (const fc of fileChanges) {
     const projectName = sessionToProject.get(fc.session_id)
     if (projectName && projectMap.has(projectName)) {
       const project = projectMap.get(projectName)!
-      project.fileChanges++
       project.linesAdded += fc.lines_added || 0
       project.linesRemoved += fc.lines_removed || 0
-    }
-  }
-
-  // Count git ops per project
-  for (const go of gitOps) {
-    const projectName = sessionToProject.get(go.session_id)
-    if (projectName && projectMap.has(projectName)) {
-      projectMap.get(projectName)!.gitOps++
     }
   }
 

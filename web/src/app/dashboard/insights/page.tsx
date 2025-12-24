@@ -38,37 +38,59 @@ async function getInsightsData(userId: string): Promise<InsightsData> {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  // Get tool uses with success field
-  const { data: toolUsesData } = await supabase
-    .from('tool_uses')
-    .select('tool_name, success, timestamp, sessions!inner(user_id)')
-    .eq('sessions.user_id', userId)
-    .gte('timestamp', thirtyDaysAgo.toISOString())
-
-  const toolUses = (toolUsesData || []) as ToolUse[]
-
-  // Get file changes
-  const { data: fileChangesData } = await supabase
-    .from('file_changes')
-    .select('file_path, lines_added, lines_removed, timestamp, sessions!inner(user_id)')
-    .eq('sessions.user_id', userId)
-    .gte('timestamp', thirtyDaysAgo.toISOString())
-
-  const fileChanges = (fileChangesData || []) as FileChange[]
-
-  // Get sessions
+  // Get session IDs for this user first
   const { data: sessionsData } = await supabase
     .from('sessions')
     .select('id, start_time, end_time')
     .eq('user_id', userId)
     .gte('start_time', thirtyDaysAgo.toISOString())
+    .limit(1000)
 
   const sessions = (sessionsData || []) as Session[]
+  const sessionIds = sessions.map(s => s.id)
 
-  // 1. Success/Error rates
-  const successCount = toolUses.filter(t => t.success).length
-  const errorCount = toolUses.filter(t => !t.success).length
-  const successRate = toolUses.length > 0 ? Math.round((successCount / toolUses.length) * 100) : 0
+  if (sessionIds.length === 0) {
+    return {
+      successRate: 0,
+      successCount: 0,
+      errorCount: 0,
+      fileTypes: [],
+      codeChurn: [],
+      sessionDurations: [],
+      directoryActivity: [],
+    }
+  }
+
+  // Get success/error counts using count queries (no 1000 limit)
+  const [successCountResult, errorCountResult] = await Promise.all([
+    supabase
+      .from('tool_uses')
+      .select('*', { count: 'exact', head: true })
+      .in('session_id', sessionIds)
+      .eq('success', true)
+      .gte('timestamp', thirtyDaysAgo.toISOString()),
+    supabase
+      .from('tool_uses')
+      .select('*', { count: 'exact', head: true })
+      .in('session_id', sessionIds)
+      .eq('success', false)
+      .gte('timestamp', thirtyDaysAgo.toISOString()),
+  ])
+
+  const successCount = successCountResult.count || 0
+  const errorCount = errorCountResult.count || 0
+  const totalCalls = successCount + errorCount
+  const successRate = totalCalls > 0 ? Math.round((successCount / totalCalls) * 100) : 0
+
+  // Get file changes (limited for chart data)
+  const { data: fileChangesData } = await supabase
+    .from('file_changes')
+    .select('file_path, lines_added, lines_removed, timestamp')
+    .in('session_id', sessionIds)
+    .gte('timestamp', thirtyDaysAgo.toISOString())
+    .limit(5000)
+
+  const fileChanges = (fileChangesData || []) as FileChange[]
 
   // 2. File types breakdown
   const extensionMap = new Map<string, number>()

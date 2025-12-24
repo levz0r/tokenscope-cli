@@ -102,6 +102,26 @@ Available styles:
 
 **Do NOT use blue (`bg-blue-600`) for buttons.** The app uses a slate/gray theme.
 
+## Supabase Query Best Practices
+
+**NEVER fetch all rows just to count them.** Supabase has a default limit of 1000 rows.
+
+```typescript
+// BAD - will max out at 1000
+const { data } = await supabase.from('tool_uses').select('*')
+const count = data?.length // Max 1000!
+
+// GOOD - use count query
+const { count } = await supabase
+  .from('tool_uses')
+  .select('*', { count: 'exact', head: true })
+```
+
+For dashboard numbers and statistics:
+- Use `{ count: 'exact', head: true }` to get counts without fetching data
+- Only fetch actual row data when needed for display (charts, lists)
+- Limit data fetches to what's needed (e.g., `.limit(5000)` for chart data)
+
 ## Important Notes
 
 1. **Always update PLAN.md** when completing tasks

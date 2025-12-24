@@ -41,7 +41,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-white/5 bg-white/[0.02] relative z-10">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">
-            Claude Code Analytics
+            TokenScope
           </CardTitle>
           <CardDescription className="text-gray-400">
             Sign in to view your analytics dashboard

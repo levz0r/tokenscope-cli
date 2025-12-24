@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Navbar } from '@/components/layout/Navbar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { ApiKeySection } from '@/components/settings/ApiKeySection'
 import { AccountSection } from '@/components/settings/AccountSection'
+import { CLISetupSection } from '@/components/settings/CLISetupSection'
 
 export default async function SettingsPage() {
   const supabaseAuth = await createClient()
@@ -55,28 +55,9 @@ export default async function SettingsPage() {
 
             <AccountSection user={user} name={profile?.name || null} />
 
-            <ApiKeySection apiKey={profile?.api_key || ''} />
+            <ApiKeySection apiKey={profile?.api_key || ''} lastUsedAt={profile?.api_key_last_used_at} />
 
-            <Card className="border-white/5 bg-white/[0.02]">
-              <CardHeader>
-                <CardTitle className="text-white">CLI Setup</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Connect your local Claude Code to this dashboard
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-lg bg-[#0a0a0a] p-4 font-mono text-sm">
-                  <p className="text-gray-400"># Install Claude Code Analytics</p>
-                  <p className="text-emerald-400">
-                    curl -sSL https://raw.githubusercontent.com/levz0r/claude-code-analytics/main/install.sh | bash
-                  </p>
-                  <p className="mt-4 text-gray-400"># Login with your API key</p>
-                  <p className="text-emerald-400">
-                    cc-analytics login {profile?.api_key ? profile.api_key.slice(0, 10) + '...' : 'YOUR_API_KEY'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <CLISetupSection apiKey={profile?.api_key || ''} />
           </div>
         </main>
       </div>

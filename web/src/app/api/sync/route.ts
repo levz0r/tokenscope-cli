@@ -105,6 +105,12 @@ export async function POST(request: NextRequest) {
 
     const user_id = profiles[0].id
 
+    // Update API key last used timestamp
+    await supabase
+      .from('profiles')
+      .update({ api_key_last_used_at: new Date().toISOString() })
+      .eq('id', user_id)
+
     // Get user's team (if any)
     const { data: membership } = await supabase
       .from('team_members')

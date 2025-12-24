@@ -13,34 +13,83 @@ async function getAnalytics(supabase: any, userId: string) {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  // Get sessions
-  const { data: sessions } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('user_id', userId)
-    .gte('start_time', thirtyDaysAgo.toISOString())
-    .order('start_time', { ascending: false })
+  // Get session count and IDs
+  const [sessionsCountResult, sessionsData] = await Promise.all([
+    supabase
+      .from('sessions')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('start_time', thirtyDaysAgo.toISOString()),
+    supabase
+      .from('sessions')
+      .select('id, start_time, end_time, project_name')
+      .eq('user_id', userId)
+      .gte('start_time', thirtyDaysAgo.toISOString())
+      .order('start_time', { ascending: false })
+      .limit(1000),
+  ])
 
-  // Get tool uses
+  const sessions = sessionsData.data || []
+  const sessionIds = sessions.map((s: { id: string }) => s.id)
+  const totalSessions = sessionsCountResult.count || 0
+
+  // If no sessions, return early with zeros
+  if (sessionIds.length === 0) {
+    return {
+      totalSessions: 0,
+      totalToolUses: 0,
+      totalFileChanges: 0,
+      totalGitOps: 0,
+      linesAdded: 0,
+      linesRemoved: 0,
+      uniqueFiles: 0,
+      toolBreakdown: {},
+      recentSessions: [],
+      mcpCalls: 0,
+      successRate: 100,
+    }
+  }
+
+  // Get all counts using Supabase's count feature (no 1000 row limit)
+  const [toolUsesCount, fileChangesCount, gitOpsCount, mcpCallsCount] = await Promise.all([
+    supabase
+      .from('tool_uses')
+      .select('*', { count: 'exact', head: true })
+      .in('session_id', sessionIds)
+      .gte('timestamp', thirtyDaysAgo.toISOString()),
+    supabase
+      .from('file_changes')
+      .select('*', { count: 'exact', head: true })
+      .in('session_id', sessionIds)
+      .gte('timestamp', thirtyDaysAgo.toISOString()),
+    supabase
+      .from('git_operations')
+      .select('*', { count: 'exact', head: true })
+      .in('session_id', sessionIds)
+      .gte('timestamp', thirtyDaysAgo.toISOString()),
+    supabase
+      .from('tool_uses')
+      .select('*', { count: 'exact', head: true })
+      .in('session_id', sessionIds)
+      .gte('timestamp', thirtyDaysAgo.toISOString())
+      .like('tool_name', 'mcp__%'),
+  ])
+
+  // Get tool uses data for breakdown chart only (limited sample)
   const { data: toolUses } = await supabase
     .from('tool_uses')
-    .select('*, sessions!inner(user_id)')
-    .eq('sessions.user_id', userId)
+    .select('tool_name, success')
+    .in('session_id', sessionIds)
     .gte('timestamp', thirtyDaysAgo.toISOString())
+    .limit(5000)
 
-  // Get file changes
+  // Get file changes for line counts (aggregated would be better but Supabase doesn't support it well)
   const { data: fileChanges } = await supabase
     .from('file_changes')
-    .select('*, sessions!inner(user_id)')
-    .eq('sessions.user_id', userId)
+    .select('file_path, lines_added, lines_removed')
+    .in('session_id', sessionIds)
     .gte('timestamp', thirtyDaysAgo.toISOString())
-
-  // Get git operations
-  const { data: gitOps } = await supabase
-    .from('git_operations')
-    .select('*, sessions!inner(user_id)')
-    .eq('sessions.user_id', userId)
-    .gte('timestamp', thirtyDaysAgo.toISOString())
+    .limit(5000)
 
   // Calculate stats
   const toolBreakdown = ((toolUses || []) as ToolUse[]).reduce((acc, t) => {
@@ -52,24 +101,22 @@ async function getAnalytics(supabase: any, userId: string) {
   const linesRemoved = ((fileChanges || []) as FileChange[]).reduce((sum, f) => sum + (f.lines_removed || 0), 0)
   const uniqueFiles = new Set(((fileChanges || []) as Array<{file_path: string}>).map(f => f.file_path)).size
 
-  // Count MCP calls
-  const mcpCalls = ((toolUses || []) as ToolUse[]).filter(t => t.tool_name.startsWith('mcp__')).length
-
-  // Calculate success rate
+  // Calculate success rate from sample data
   const successCount = ((toolUses || []) as ToolUse[]).filter(t => t.success).length
-  const successRate = toolUses?.length > 0 ? Math.round((successCount / toolUses.length) * 100) : 100
+  const toolSampleSize = toolUses?.length || 0
+  const successRate = toolSampleSize > 0 ? Math.round((successCount / toolSampleSize) * 100) : 100
 
   return {
-    totalSessions: sessions?.length || 0,
-    totalToolUses: toolUses?.length || 0,
-    totalFileChanges: fileChanges?.length || 0,
-    totalGitOps: gitOps?.length || 0,
+    totalSessions,
+    totalToolUses: toolUsesCount.count || 0,
+    totalFileChanges: fileChangesCount.count || 0,
+    totalGitOps: gitOpsCount.count || 0,
     linesAdded,
     linesRemoved,
     uniqueFiles,
     toolBreakdown,
-    recentSessions: sessions?.slice(0, 5) || [],
-    mcpCalls,
+    recentSessions: sessions.slice(0, 5),
+    mcpCalls: mcpCallsCount.count || 0,
     successRate,
   }
 }
@@ -109,7 +156,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-gray-500">Your Claude Code analytics overview</p>
+        <p className="text-gray-500">Your AI coding analytics overview</p>
       </div>
 
       <LiveSummaryCards
