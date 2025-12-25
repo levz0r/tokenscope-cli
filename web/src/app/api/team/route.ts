@@ -10,19 +10,39 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name } = await request.json()
+    const { name, orgId } = await request.json()
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Team name is required' }, { status: 400 })
     }
 
+    if (!orgId) {
+      return NextResponse.json({ error: 'Organization ID is required' }, { status: 400 })
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = createAdminClient() as any
 
-    // Create team
+    // Check user has permission to create teams in this org (owner or admin)
+    const { data: membership, error: membershipError } = await db
+      .from('organization_members')
+      .select('role')
+      .eq('org_id', orgId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (membershipError || !membership) {
+      return NextResponse.json({ error: 'You are not a member of this organization' }, { status: 403 })
+    }
+
+    if (!['owner', 'admin'].includes(membership.role)) {
+      return NextResponse.json({ error: 'Only organization owners and admins can create teams' }, { status: 403 })
+    }
+
+    // Create team with org_id
     const { data: team, error: teamError } = await db
       .from('teams')
-      .insert({ name: name.trim() })
+      .insert({ name: name.trim(), org_id: orgId })
       .select()
       .single()
 
@@ -87,15 +107,27 @@ export async function GET() {
       return NextResponse.json({ teams: [] })
     }
 
-    // Get teams
+    // Get teams with organization info
     const teamIds = memberships.map((m: { team_id: string }) => m.team_id)
     const { data: teams } = await db
       .from('teams')
-      .select('id, name, created_at')
+      .select('id, name, created_at, org_id, organizations(id, name)')
       .in('id', teamIds)
 
-    const teamsWithRoles = teams?.map((team: { id: string; name: string; created_at: string }) => ({
-      ...team,
+    interface TeamData {
+      id: string
+      name: string
+      created_at: string
+      org_id: string | null
+      organizations: { id: string; name: string } | null
+    }
+
+    const teamsWithRoles = teams?.map((team: TeamData) => ({
+      id: team.id,
+      name: team.name,
+      created_at: team.created_at,
+      org_id: team.org_id,
+      organization: team.organizations,
       role: memberships.find((m: { team_id: string; role: string }) => m.team_id === team.id)?.role || 'member'
     })) || []
 

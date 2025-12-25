@@ -1,9 +1,8 @@
 import { getServerAuth } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Users, Building2, Crown } from 'lucide-react'
-import Link from 'next/link'
+import { Users, Layers, Crown, Building2 } from 'lucide-react'
 import { CreateTeamButton } from '@/components/team/CreateTeamButton'
+import { TeamPageCardActions } from '@/components/team/TeamPageCardActions'
 
 interface Team {
   id: string
@@ -100,7 +99,7 @@ export default async function TeamPage() {
       {teams.length === 0 ? (
         <Card className="border-white/5 bg-white/[0.02]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Building2 className="h-16 w-16 text-gray-600 mb-4" />
+            <Layers className="h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No Team Yet</h3>
             <p className="text-gray-400 text-center max-w-md mb-6">
               Create a team to share analytics with your colleagues and managers.
@@ -116,7 +115,7 @@ export default async function TeamPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-blue-400" />
+                    <Layers className="h-5 w-5 text-blue-400" />
                     {team.name}
                   </CardTitle>
                   {team.role === 'owner' && (
@@ -141,20 +140,10 @@ export default async function TeamPage() {
                     <div className="text-xs text-gray-400">Sessions</div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Link href={`/team/${team.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full border-white/10 bg-white/10/50 hover:bg-white/15 text-white">
-                      View Dashboard
-                    </Button>
-                  </Link>
-                  {(team.role === 'owner' || team.role === 'admin') && (
-                    <Link href="/team/members">
-                      <Button variant="outline" className="border-white/10 bg-white/10/50 hover:bg-white/15 text-white">
-                        <Users className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  )}
-                </div>
+                <TeamPageCardActions
+                  teamId={team.id}
+                  canManage={team.role === 'owner' || team.role === 'admin'}
+                />
               </CardContent>
             </Card>
           ))}

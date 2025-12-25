@@ -12,9 +12,10 @@ import {
   Plug,
   FolderKanban,
   Lightbulb,
-  Users,
+  Layers,
   Settings,
   Puzzle,
+  Building2,
 } from 'lucide-react'
 
 const navigation = [
@@ -67,9 +68,14 @@ const navigation = [
 
 const secondaryNavigation = [
   {
+    name: 'Organizations',
+    href: '/org',
+    icon: Building2,
+  },
+  {
     name: 'Team',
     href: '/team',
-    icon: Users,
+    icon: Layers,
   },
   {
     name: 'Settings',
