@@ -86,6 +86,26 @@ export async function POST(request: NextRequest) {
             onConflict: 'repo_id',
           })
 
+        // Store individual commits for history tracking
+        for (const commit of syncResult.commits) {
+          await supabase
+            .from('repo_commits')
+            .upsert({
+              repo_id: repo.id,
+              commit_sha: commit.sha,
+              commit_message: commit.message.substring(0, 500), // Truncate long messages
+              author_name: commit.authorName,
+              author_email: commit.authorEmail,
+              is_ai_generated: commit.isAIGenerated,
+              ai_tool: commit.aiTool,
+              lines_added: commit.additions,
+              lines_removed: commit.deletions,
+              committed_at: commit.committedAt.toISOString(),
+            }, {
+              onConflict: 'repo_id,commit_sha',
+            })
+        }
+
         // Update tracked_repos
         await supabase
           .from('tracked_repos')

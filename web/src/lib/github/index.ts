@@ -90,9 +90,12 @@ export async function exchangeCodeForToken(code: string): Promise<{
   return response.json()
 }
 
-// Check if a commit message indicates AI generation
-export function isAIGeneratedCommit(commitMessage: string): boolean {
-  const aiIndicators = [
+// AI tool types
+export type AITool = 'claude-code' | null
+
+// Check if a commit message indicates AI generation and return which tool
+export function detectAITool(commitMessage: string): AITool {
+  const claudeIndicators = [
     'Co-Authored-By: Claude',
     'co-authored-by: claude',
     '🤖 Generated with Claude Code',
@@ -101,9 +104,18 @@ export function isAIGeneratedCommit(commitMessage: string): boolean {
     'Co-Authored-By: Claude Sonnet',
   ]
 
-  return aiIndicators.some(indicator =>
-    commitMessage.toLowerCase().includes(indicator.toLowerCase())
-  )
+  const lowerMessage = commitMessage.toLowerCase()
+
+  if (claudeIndicators.some(indicator => lowerMessage.includes(indicator.toLowerCase()))) {
+    return 'claude-code'
+  }
+
+  return null
+}
+
+// Legacy function for backwards compatibility
+export function isAIGeneratedCommit(commitMessage: string): boolean {
+  return detectAITool(commitMessage) !== null
 }
 
 // Parse commit stats from GitHub API response
@@ -113,6 +125,7 @@ export interface CommitStats {
   authorName: string
   authorEmail: string
   isAIGenerated: boolean
+  aiTool: AITool
   additions: number
   deletions: number
   committedAt: Date
@@ -126,12 +139,14 @@ export function parseCommit(commit: {
   }
   stats?: { additions: number; deletions: number }
 }): CommitStats {
+  const aiTool = detectAITool(commit.commit.message)
   return {
     sha: commit.sha,
     message: commit.commit.message,
     authorName: commit.commit.author?.name || 'Unknown',
     authorEmail: commit.commit.author?.email || '',
-    isAIGenerated: isAIGeneratedCommit(commit.commit.message),
+    isAIGenerated: aiTool !== null,
+    aiTool,
     additions: commit.stats?.additions || 0,
     deletions: commit.stats?.deletions || 0,
     committedAt: new Date(commit.commit.author?.date || Date.now()),

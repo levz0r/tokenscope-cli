@@ -141,6 +141,25 @@ export async function GET(request: NextRequest) {
               onConflict: 'repo_id',
             })
 
+          // Store individual commits for history tracking
+          for (const commit of syncResult.commits) {
+            await supabase
+              .from('repo_commits')
+              .upsert({
+                repo_id: trackedRepo.id,
+                commit_sha: commit.sha,
+                commit_message: commit.message.substring(0, 500),
+                author_name: commit.authorName,
+                author_email: commit.authorEmail,
+                is_ai_generated: commit.isAIGenerated,
+                lines_added: commit.additions,
+                lines_removed: commit.deletions,
+                committed_at: commit.committedAt.toISOString(),
+              }, {
+                onConflict: 'repo_id,commit_sha',
+              })
+          }
+
           // Update tracked_repos with the percentage
           await supabase
             .from('tracked_repos')

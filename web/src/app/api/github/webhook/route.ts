@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { WEBHOOK_SECRET, isAIGeneratedCommit, getInstallationOctokit } from '@/lib/github'
+import { WEBHOOK_SECRET, detectAITool, getInstallationOctokit } from '@/lib/github'
 import crypto from 'crypto'
 
 // Verify GitHub webhook signature
@@ -107,7 +107,8 @@ export async function POST(request: NextRequest) {
 
     for (const commit of data.commits) {
       totalCommits++
-      const isAI = isAIGeneratedCommit(commit.message)
+      const aiTool = detectAITool(commit.message)
+      const isAI = aiTool !== null
 
       if (isAI) {
         aiCommits++
@@ -137,6 +138,7 @@ export async function POST(request: NextRequest) {
           author_name: commit.author.name,
           author_email: commit.author.email,
           is_ai_generated: isAI,
+          ai_tool: aiTool,
           lines_added: 0, // Will be updated from stats above
           lines_removed: 0,
           committed_at: new Date().toISOString(),
