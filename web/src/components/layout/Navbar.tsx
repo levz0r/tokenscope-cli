@@ -20,7 +20,7 @@ interface NavbarProps {
   user: User
   profile: {
     email: string
-    api_key: string
+    api_key?: string | null
     name?: string | null
   } | null
 }

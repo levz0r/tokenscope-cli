@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ToolUsageChart } from '@/components/analytics/ToolUsageChart'
 import { RecentActivity } from '@/components/analytics/RecentActivity'
 import { LiveSummaryCards } from '@/components/dashboard/LiveSummaryCards'
+import { GitHubConnect } from '@/components/github'
 
 interface ToolUse { tool_name: string; success: boolean }
 interface FileChange { lines_added: number; lines_removed: number }
@@ -198,6 +199,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <GitHubConnect />
     </div>
   )
 }

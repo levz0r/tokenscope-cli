@@ -6,6 +6,11 @@
 DB_DIR="${CLAUDE_ANALYTICS_DIR:-$HOME/.claude/analytics}"
 DB_FILE="${DB_DIR}/analytics.db"
 
+# SQLite wrapper with busy timeout for concurrent access
+sql() {
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "$@"
+}
+
 # Ensure database directory exists
 ensure_db_dir() {
     mkdir -p "$DB_DIR"
@@ -14,7 +19,12 @@ ensure_db_dir() {
 # Initialize database schema
 init_db() {
     ensure_db_dir
-    sqlite3 "$DB_FILE" <<'SQL'
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" <<'SQL'
+-- Enable WAL mode for better concurrent access
+PRAGMA journal_mode=WAL;
+PRAGMA busy_timeout=5000;
+SQL
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" <<'SQL'
 -- Sessions table
 CREATE TABLE IF NOT EXISTS sessions (
     session_id TEXT PRIMARY KEY,
@@ -155,7 +165,7 @@ record_session_start() {
     local project_name="$4"
 
     ensure_db_dir
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT OR REPLACE INTO sessions (session_id, start_time, source, cwd, project_name)
         VALUES ('$session_id', datetime('now'), '$source', '$cwd', '$project_name');
     "
@@ -166,7 +176,7 @@ record_session_end() {
     local session_id="$1"
     local reason="$2"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         UPDATE sessions
         SET end_time = datetime('now'), reason = '$reason'
         WHERE session_id = '$session_id';
@@ -180,7 +190,7 @@ record_tool_use() {
     local tool_use_id="$3"
     local success="$4"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO tool_uses (session_id, tool_name, tool_use_id, timestamp, success)
         VALUES ('$session_id', '$tool_name', '$tool_use_id', datetime('now'), $success);
     "
@@ -198,7 +208,7 @@ record_file_change() {
     # Escape single quotes in file path
     file_path="${file_path//\'/\'\'}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO file_changes (session_id, tool_use_id, file_path, operation, lines_added, lines_removed, timestamp)
         VALUES ('$session_id', '$tool_use_id', '$file_path', '$operation', $lines_added, $lines_removed, datetime('now'));
     "
@@ -214,7 +224,7 @@ record_git_operation() {
     # Escape single quotes in command
     command="${command//\'/\'\'}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO git_operations (session_id, command, operation_type, exit_code, timestamp)
         VALUES ('$session_id', '$command', '$operation_type', $exit_code, datetime('now'));
     "
@@ -230,7 +240,7 @@ record_token_usage() {
     local model="${6:-unknown}"
     local cost="${7:-0}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO token_usage (session_id, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, model, cost_usd, timestamp)
         VALUES ('$session_id', $input_tokens, $output_tokens, $cache_read, $cache_creation, '$model', $cost, datetime('now'));
     "
@@ -241,7 +251,7 @@ record_user_prompt() {
     local session_id="$1"
     local prompt_length="$2"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO user_prompts (session_id, prompt_length, timestamp)
         VALUES ('$session_id', $prompt_length, datetime('now'));
     "
@@ -257,7 +267,7 @@ record_skill_use() {
     # Escape single quotes
     args="${args//\'/\'\'}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO skill_uses (session_id, skill_name, plugin_name, args, timestamp)
         VALUES ('$session_id', '$skill_name', '$plugin_name', '$args', datetime('now'));
     "
@@ -274,7 +284,7 @@ record_agent_spawn() {
     # Escape single quotes
     description="${description//\'/\'\'}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO agent_spawns (session_id, agent_type, description, model, background, timestamp)
         VALUES ('$session_id', '$agent_type', '$description', '$model', $background, datetime('now'));
     "
@@ -290,7 +300,7 @@ record_plugin() {
     local has_hooks="${6:-0}"
     local has_mcp="${7:-0}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO installed_plugins (plugin_name, plugin_source, version, has_skills, has_agents, has_hooks, has_mcp, first_seen, last_seen)
         VALUES ('$plugin_name', '$plugin_source', '$version', $has_skills, $has_agents, $has_hooks, $has_mcp, datetime('now'), datetime('now'))
         ON CONFLICT(plugin_name, plugin_source) DO UPDATE SET
@@ -360,7 +370,7 @@ scan_installed_plugins() {
 # Migrate database to add sync columns (run once)
 migrate_for_sync() {
     ensure_db_dir
-    sqlite3 "$DB_FILE" <<'SQL'
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" <<'SQL'
 -- Add sync tracking columns to sessions
 ALTER TABLE sessions ADD COLUMN synced INTEGER DEFAULT 0;
 ALTER TABLE sessions ADD COLUMN cloud_id TEXT;
@@ -409,7 +419,7 @@ SQL
 
 # Check if sync migration has been applied
 is_sync_enabled() {
-    local result=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM pragma_table_info('sessions') WHERE name='synced';" 2>/dev/null)
+    local result=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM pragma_table_info('sessions') WHERE name='synced';" 2>/dev/null)
     [[ "$result" == "1" ]]
 }
 
@@ -428,7 +438,7 @@ save_cloud_auth() {
         migrate_for_sync 2>/dev/null
     fi
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT OR REPLACE INTO cloud_auth (id, api_key, api_url, email, user_id, team_id)
         VALUES (1, '$api_key', '$api_url', '$email', '$user_id', '$team_id');
     "
@@ -436,28 +446,28 @@ save_cloud_auth() {
 
 # Get cloud credentials
 get_cloud_auth() {
-    sqlite3 -json "$DB_FILE" "SELECT api_key, api_url, email, user_id, team_id, last_sync FROM cloud_auth WHERE id = 1;" 2>/dev/null
+    sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "SELECT api_key, api_url, email, user_id, team_id, last_sync FROM cloud_auth WHERE id = 1;" 2>/dev/null
 }
 
 # Check if logged in to cloud
 is_logged_in() {
-    local result=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM cloud_auth WHERE id = 1;" 2>/dev/null)
+    local result=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM cloud_auth WHERE id = 1;" 2>/dev/null)
     [[ "$result" == "1" ]]
 }
 
 # Clear cloud credentials (logout)
 clear_cloud_auth() {
-    sqlite3 "$DB_FILE" "DELETE FROM cloud_auth;" 2>/dev/null
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "DELETE FROM cloud_auth;" 2>/dev/null
 }
 
 # Update last sync time
 update_last_sync() {
-    sqlite3 "$DB_FILE" "UPDATE cloud_auth SET last_sync = datetime('now') WHERE id = 1;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE cloud_auth SET last_sync = datetime('now') WHERE id = 1;"
 }
 
 # Get unsynced sessions
 get_unsynced_sessions() {
-    local result=$(sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "
         SELECT session_id as local_session_id, start_time, end_time, project_name, source, reason
         FROM sessions
         WHERE synced = 0 OR synced IS NULL;
@@ -467,7 +477,7 @@ get_unsynced_sessions() {
 
 # Get unsynced tool uses
 get_unsynced_tool_uses() {
-    local result=$(sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "
         SELECT t.session_id as local_session_id, t.tool_name, t.tool_use_id, t.timestamp, t.success
         FROM tool_uses t
         WHERE t.synced = 0 OR t.synced IS NULL;
@@ -477,7 +487,7 @@ get_unsynced_tool_uses() {
 
 # Get unsynced file changes
 get_unsynced_file_changes() {
-    local result=$(sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "
         SELECT f.session_id as local_session_id, f.file_path, f.operation, f.lines_added, f.lines_removed, f.timestamp
         FROM file_changes f
         WHERE f.synced = 0 OR f.synced IS NULL;
@@ -487,7 +497,7 @@ get_unsynced_file_changes() {
 
 # Get unsynced git operations
 get_unsynced_git_ops() {
-    local result=$(sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "
         SELECT g.session_id as local_session_id, g.command, g.operation_type, g.exit_code, g.timestamp
         FROM git_operations g
         WHERE g.synced = 0 OR g.synced IS NULL;
@@ -497,7 +507,7 @@ get_unsynced_git_ops() {
 
 # Get unsynced skill uses
 get_unsynced_skill_uses() {
-    local result=$(sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "
         SELECT s.session_id as local_session_id, s.skill_name, s.plugin_name, s.args, s.timestamp
         FROM skill_uses s
         WHERE s.synced = 0 OR s.synced IS NULL;
@@ -507,7 +517,7 @@ get_unsynced_skill_uses() {
 
 # Get unsynced agent spawns
 get_unsynced_agent_spawns() {
-    local result=$(sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "
         SELECT a.session_id as local_session_id, a.agent_type, a.description, a.model, a.background, a.timestamp
         FROM agent_spawns a
         WHERE a.synced = 0 OR a.synced IS NULL;
@@ -517,7 +527,7 @@ get_unsynced_agent_spawns() {
 
 # Get unsynced plugins
 get_unsynced_plugins() {
-    local result=$(sqlite3 -json "$DB_FILE" "
+    local result=$(sqlite3 -cmd ".timeout 5000" -json "$DB_FILE" "
         SELECT plugin_name, plugin_source, version, has_skills, has_agents, has_hooks, has_mcp, first_seen, last_seen
         FROM installed_plugins
         WHERE synced = 0 OR synced IS NULL;
@@ -527,37 +537,37 @@ get_unsynced_plugins() {
 
 # Mark sessions as synced
 mark_sessions_synced() {
-    sqlite3 "$DB_FILE" "UPDATE sessions SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE sessions SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
 # Mark tool uses as synced
 mark_tool_uses_synced() {
-    sqlite3 "$DB_FILE" "UPDATE tool_uses SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE tool_uses SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
 # Mark file changes as synced
 mark_file_changes_synced() {
-    sqlite3 "$DB_FILE" "UPDATE file_changes SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE file_changes SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
 # Mark git operations as synced
 mark_git_ops_synced() {
-    sqlite3 "$DB_FILE" "UPDATE git_operations SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE git_operations SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
 # Mark skill uses as synced
 mark_skill_uses_synced() {
-    sqlite3 "$DB_FILE" "UPDATE skill_uses SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE skill_uses SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
 # Mark agent spawns as synced
 mark_agent_spawns_synced() {
-    sqlite3 "$DB_FILE" "UPDATE agent_spawns SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE agent_spawns SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
 # Mark plugins as synced
 mark_plugins_synced() {
-    sqlite3 "$DB_FILE" "UPDATE installed_plugins SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "UPDATE installed_plugins SET synced = 1 WHERE synced = 0 OR synced IS NULL;"
 }
 
 # Log sync operation
@@ -566,7 +576,7 @@ log_sync() {
     local records="${2:-0}"
     local error="${3:-}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO sync_log (operation, records_synced, error_message)
         VALUES ('$operation', $records, '$error');
     "
@@ -574,7 +584,7 @@ log_sync() {
 
 # Get sync stats
 get_sync_stats() {
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         SELECT
             (SELECT COUNT(*) FROM sessions WHERE synced = 0 OR synced IS NULL) as unsynced_sessions,
             (SELECT COUNT(*) FROM tool_uses WHERE synced = 0 OR synced IS NULL) as unsynced_tools,

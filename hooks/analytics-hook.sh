@@ -205,7 +205,27 @@ case "$HOOK_EVENT" in
         ;;
 
     "Stop"|"SubagentStop")
-        # Could be used to mark session milestones
+        # Auto-sync to cloud (throttled to avoid too frequent syncs)
+        # Only syncs if logged in and at least 5 minutes since last sync
+        LAST_SYNC_FILE="/tmp/cc-analytics-last-sync"
+        MIN_SYNC_INTERVAL=300  # 5 minutes
+
+        # Check if logged in (using db function)
+        if is_logged_in; then
+            LAST_SYNC=$(cat "$LAST_SYNC_FILE" 2>/dev/null || echo 0)
+            NOW=$(date +%s)
+
+            if (( NOW - LAST_SYNC > MIN_SYNC_INTERVAL )); then
+                # Run sync in background with quiet mode
+                BIN_DIR="$(dirname "$SCRIPT_DIR")/bin"
+                if [[ -x "$BIN_DIR/cc-analytics" ]]; then
+                    "$BIN_DIR/cc-analytics" sync --quiet >/dev/null 2>&1 &
+                elif command -v cc-analytics &>/dev/null; then
+                    cc-analytics sync --quiet >/dev/null 2>&1 &
+                fi
+                echo "$NOW" > "$LAST_SYNC_FILE"
+            fi
+        fi
         ;;
 
     "PreCompact")

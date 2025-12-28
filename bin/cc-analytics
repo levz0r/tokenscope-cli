@@ -43,30 +43,30 @@ show_summary() {
     echo
 
     # Total sessions
-    TOTAL_SESSIONS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM sessions;")
-    ACTIVE_SESSIONS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM sessions WHERE end_time IS NULL;")
+    TOTAL_SESSIONS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM sessions;")
+    ACTIVE_SESSIONS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM sessions WHERE end_time IS NULL;")
 
     # Today's stats
-    TODAY_SESSIONS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM sessions WHERE date(start_time) = date('now');")
-    TODAY_TOOLS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE date(timestamp) = date('now');")
+    TODAY_SESSIONS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM sessions WHERE date(start_time) = date('now');")
+    TODAY_TOOLS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE date(timestamp) = date('now');")
 
     # Tool usage
-    TOTAL_TOOLS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses;")
-    TOTAL_WRITES=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Write';")
-    TOTAL_EDITS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Edit';")
-    TOTAL_READS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Read';")
-    TOTAL_BASH=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Bash';")
+    TOTAL_TOOLS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM tool_uses;")
+    TOTAL_WRITES=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Write';")
+    TOTAL_EDITS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Edit';")
+    TOTAL_READS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Read';")
+    TOTAL_BASH=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM tool_uses WHERE tool_name = 'Bash';")
 
     # File stats
-    TOTAL_FILES=$(sqlite3 "$DB_FILE" "SELECT COUNT(DISTINCT file_path) FROM file_changes;")
-    LINES_ADDED=$(sqlite3 "$DB_FILE" "SELECT COALESCE(SUM(lines_added), 0) FROM file_changes;")
-    LINES_REMOVED=$(sqlite3 "$DB_FILE" "SELECT COALESCE(SUM(lines_removed), 0) FROM file_changes;")
+    TOTAL_FILES=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(DISTINCT file_path) FROM file_changes;")
+    LINES_ADDED=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COALESCE(SUM(lines_added), 0) FROM file_changes;")
+    LINES_REMOVED=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COALESCE(SUM(lines_removed), 0) FROM file_changes;")
 
     # Git stats
-    TOTAL_GIT=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations;")
-    TOTAL_COMMITS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'commit';")
-    TOTAL_PUSHES=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'push';")
-    TOTAL_PRS=$(sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'pr-create';")
+    TOTAL_GIT=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM git_operations;")
+    TOTAL_COMMITS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'commit';")
+    TOTAL_PUSHES=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'push';")
+    TOTAL_PRS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM git_operations WHERE operation_type = 'pr-create';")
 
     echo -e "${BOLD}📊 Overview${NC}"
     echo -e "   Total Sessions:     ${GREEN}$(format_number $TOTAL_SESSIONS)${NC}"
@@ -110,7 +110,7 @@ show_sessions() {
     echo -e "${BOLD}${CYAN}Recent Sessions (last $limit)${NC}"
     echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
 
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             substr(session_id, 1, 8) as 'Session',
             project_name as 'Project',
@@ -134,7 +134,7 @@ show_tools() {
     echo -e "${BOLD}${CYAN}Tool Usage (last $days days)${NC}"
     echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
 
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             tool_name as 'Tool',
             COUNT(*) as 'Uses',
@@ -155,7 +155,7 @@ show_files() {
     echo -e "${BOLD}${CYAN}Most Modified Files (top $limit)${NC}"
     echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
 
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             substr(file_path, -50) as 'File',
             COUNT(*) as 'Changes',
@@ -176,7 +176,7 @@ show_git() {
     echo -e "${BOLD}${CYAN}Git Operations (last $days days)${NC}"
     echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
 
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             operation_type as 'Operation',
             COUNT(*) as 'Count',
@@ -197,7 +197,7 @@ show_daily() {
     echo -e "${BOLD}${CYAN}Daily Activity (last $days days)${NC}"
     echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
 
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             date(timestamp) as 'Date',
             COUNT(DISTINCT session_id) as 'Sessions',
@@ -217,7 +217,7 @@ show_projects() {
     echo -e "${BOLD}${CYAN}Projects by Activity${NC}"
     echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
 
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             COALESCE(project_name, '(unknown)') as 'Project',
             COUNT(*) as 'Sessions',
@@ -242,7 +242,7 @@ show_times() {
     echo
 
     # Total time spent (completed sessions only)
-    TOTAL_TIME=$(sqlite3 "$DB_FILE" "
+    TOTAL_TIME=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         SELECT COALESCE(
             printf('%d hrs %d mins',
                 SUM(strftime('%s', end_time) - strftime('%s', start_time)) / 3600,
@@ -254,7 +254,7 @@ show_times() {
         WHERE end_time IS NOT NULL;
     ")
 
-    AVG_SESSION=$(sqlite3 "$DB_FILE" "
+    AVG_SESSION=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         SELECT COALESCE(
             printf('%d mins',
                 AVG(strftime('%s', end_time) - strftime('%s', start_time)) / 60
@@ -265,7 +265,7 @@ show_times() {
         WHERE end_time IS NOT NULL;
     ")
 
-    LONGEST_SESSION=$(sqlite3 "$DB_FILE" "
+    LONGEST_SESSION=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         SELECT COALESCE(
             printf('%d mins',
                 MAX(strftime('%s', end_time) - strftime('%s', start_time)) / 60
@@ -277,7 +277,7 @@ show_times() {
     ")
 
     # Today's time
-    TODAY_TIME=$(sqlite3 "$DB_FILE" "
+    TODAY_TIME=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         SELECT COALESCE(
             printf('%d hrs %d mins',
                 SUM(
@@ -301,7 +301,7 @@ show_times() {
     echo
 
     echo -e "${BOLD}📅 Activity by Hour (Last 7 Days)${NC}"
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             printf('%02d:00', strftime('%H', timestamp)) as 'Hour',
             COUNT(*) as 'Tool Calls',
@@ -314,7 +314,7 @@ show_times() {
     echo
 
     echo -e "${BOLD}📆 Activity by Day of Week${NC}"
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             CASE strftime('%w', timestamp)
                 WHEN '0' THEN 'Sunday'
@@ -342,7 +342,7 @@ show_hourly() {
     echo
 
     # Get max count for scaling
-    MAX_COUNT=$(sqlite3 "$DB_FILE" "
+    MAX_COUNT=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         SELECT MAX(cnt) FROM (
             SELECT COUNT(*) as cnt
             FROM tool_uses
@@ -360,7 +360,7 @@ show_hourly() {
     echo -e "────  ────────────────────────────────────────────────"
 
     for hour in $(seq -w 0 23); do
-        COUNT=$(sqlite3 "$DB_FILE" "
+        COUNT=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
             SELECT COUNT(*)
             FROM tool_uses
             WHERE timestamp >= datetime('now', '-30 days')
@@ -403,7 +403,7 @@ show_timeline() {
     echo -e "${BOLD}${CYAN}Session Timeline (Last $days Days)${NC}"
     echo -e "${DIM}────────────────────────────────────────────────────────────────${NC}"
 
-    sqlite3 -header -column "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" -header -column "$DB_FILE" "
         SELECT
             date(start_time, 'localtime') as 'Date',
             time(start_time, 'localtime') as 'Start',
@@ -427,7 +427,7 @@ export_json() {
 
     echo -e "${CYAN}Exporting analytics to $output...${NC}"
 
-    sqlite3 "$DB_FILE" "
+    sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         SELECT json_object(
             'exported_at', datetime('now'),
             'summary', json_object(
@@ -543,7 +543,16 @@ cloud_status() {
     local auth_json=$(get_cloud_auth)
     local email=$(echo "$auth_json" | jq -r '.[0].email // "unknown"')
     local api_url=$(echo "$auth_json" | jq -r '.[0].api_url // "unknown"')
-    local last_sync=$(echo "$auth_json" | jq -r '.[0].last_sync // "never"')
+    local last_sync_utc=$(echo "$auth_json" | jq -r '.[0].last_sync // "never"')
+    # Convert UTC to local time for display
+    local last_sync="$last_sync_utc"
+    if [[ "$last_sync_utc" != "never" && "$last_sync_utc" != "null" ]]; then
+        # Parse UTC time to epoch, then format in local timezone
+        local epoch=$(TZ=UTC date -j -f "%Y-%m-%d %H:%M:%S" "$last_sync_utc" "+%s" 2>/dev/null)
+        if [[ -n "$epoch" ]]; then
+            last_sync=$(date -j -r "$epoch" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || echo "$last_sync_utc")
+        fi
+    fi
 
     echo -e "  Status:        ${GREEN}Connected${NC}"
     echo -e "  Email:         ${CYAN}$email${NC}"
@@ -583,19 +592,21 @@ cloud_status() {
 
 # Sync data to cloud
 cloud_sync() {
+    local quiet="${1:-}"
+
     if ! is_logged_in 2>/dev/null; then
-        echo -e "${RED}Error: Not logged in. Run 'cc-analytics login' first.${NC}"
+        [[ "$quiet" != "--quiet" ]] && echo -e "${RED}Error: Not logged in. Run 'cc-analytics login' first.${NC}"
         exit 1
     fi
 
     # Ensure sync columns exist
     if ! is_sync_enabled 2>/dev/null; then
-        echo -e "${DIM}Migrating database for sync...${NC}"
+        [[ "$quiet" != "--quiet" ]] && echo -e "${DIM}Migrating database for sync...${NC}"
         migrate_for_sync 2>/dev/null
     fi
 
-    echo -e "${BOLD}${CYAN}Syncing to Cloud${NC}"
-    echo
+    [[ "$quiet" != "--quiet" ]] && echo -e "${BOLD}${CYAN}Syncing to Cloud${NC}"
+    [[ "$quiet" != "--quiet" ]] && echo
 
     # Get auth info
     local auth_json=$(get_cloud_auth)
@@ -623,12 +634,12 @@ cloud_sync() {
     local total=$((session_count + tool_count + file_count + git_count + skill_count + agent_count + plugin_count))
 
     if [[ $total -eq 0 ]]; then
-        echo -e "${GREEN}✓ Everything is synced!${NC}"
+        [[ "$quiet" != "--quiet" ]] && echo -e "${GREEN}✓ Everything is synced!${NC}"
         return
     fi
 
-    echo -e "  Syncing $session_count sessions, $tool_count tool uses, $file_count file changes, $git_count git ops, $skill_count skills, $agent_count agents, $plugin_count plugins..."
-    echo
+    [[ "$quiet" != "--quiet" ]] && echo -e "  Syncing $session_count sessions, $tool_count tool uses, $file_count file changes, $git_count git ops, $skill_count skills, $agent_count agents, $plugin_count plugins..."
+    [[ "$quiet" != "--quiet" ]] && echo
 
     # Build payload
     local payload=$(jq -n \
@@ -663,20 +674,22 @@ cloud_sync() {
         mark_plugins_synced 2>/dev/null || true
         update_last_sync
 
-        local synced=$(echo "$body" | jq -r '.synced')
-        echo -e "${GREEN}✓ Sync complete!${NC}"
-        echo -e "  Sessions:      $(echo "$synced" | jq -r '.sessions // 0')"
-        echo -e "  Tool Uses:     $(echo "$synced" | jq -r '.tool_uses // 0')"
-        echo -e "  File Changes:  $(echo "$synced" | jq -r '.file_changes // 0')"
-        echo -e "  Git Ops:       $(echo "$synced" | jq -r '.git_operations // 0')"
-        echo -e "  Skills:        $(echo "$synced" | jq -r '.skill_uses // 0')"
-        echo -e "  Agents:        $(echo "$synced" | jq -r '.agent_spawns // 0')"
-        echo -e "  Plugins:       $(echo "$synced" | jq -r '.installed_plugins // 0')"
+        if [[ "$quiet" != "--quiet" ]]; then
+            local synced=$(echo "$body" | jq -r '.synced')
+            echo -e "${GREEN}✓ Sync complete!${NC}"
+            echo -e "  Sessions:      $(echo "$synced" | jq -r '.sessions // 0')"
+            echo -e "  Tool Uses:     $(echo "$synced" | jq -r '.tool_uses // 0')"
+            echo -e "  File Changes:  $(echo "$synced" | jq -r '.file_changes // 0')"
+            echo -e "  Git Ops:       $(echo "$synced" | jq -r '.git_operations // 0')"
+            echo -e "  Skills:        $(echo "$synced" | jq -r '.skill_uses // 0')"
+            echo -e "  Agents:        $(echo "$synced" | jq -r '.agent_spawns // 0')"
+            echo -e "  Plugins:       $(echo "$synced" | jq -r '.installed_plugins // 0')"
+        fi
 
         log_sync "sync_complete" "$total"
     else
-        echo -e "${RED}Sync failed (HTTP $http_code)${NC}"
-        echo -e "${DIM}$body${NC}"
+        [[ "$quiet" != "--quiet" ]] && echo -e "${RED}Sync failed (HTTP $http_code)${NC}"
+        [[ "$quiet" != "--quiet" ]] && echo -e "${DIM}$body${NC}"
         log_sync "sync_error" "0" "HTTP $http_code"
         exit 1
     fi
@@ -706,7 +719,7 @@ show_help() {
     echo -e "  ${GREEN}login${NC} [key]        Login to cloud with API key"
     echo -e "  ${GREEN}logout${NC}             Logout from cloud"
     echo -e "  ${GREEN}status${NC}             Show cloud connection status"
-    echo -e "  ${GREEN}sync${NC}               Sync local data to cloud"
+    echo -e "  ${GREEN}sync${NC} [--quiet]     Sync local data to cloud"
     echo
     echo -e "${BOLD}Other:${NC}"
     echo -e "  ${GREEN}help${NC}               Show this help message"
@@ -768,7 +781,7 @@ case "${1:-summary}" in
         cloud_status
         ;;
     sync)
-        cloud_sync
+        cloud_sync "${2:-}"
         ;;
     help|h|-h|--help)
         show_help

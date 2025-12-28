@@ -127,6 +127,17 @@ HOOKS_CONFIG=$(cat <<'EOF'
         ]
       }
     ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write",
@@ -154,6 +165,10 @@ HOOKS_CONFIG=$(cat <<'EOF'
       },
       {
         "matcher": "Task",
+        "hooks": [{"type": "command", "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh", "timeout": 5000}]
+      },
+      {
+        "matcher": "Skill",
         "hooks": [{"type": "command", "command": "bash $HOME/.claude/analytics/hooks/analytics-hook.sh", "timeout": 5000}]
       }
     ]
