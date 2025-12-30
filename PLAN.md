@@ -77,7 +77,7 @@ Transform the existing local-only analytics CLI into a SaaS product with:
 ### Commands to Run
 
 ```bash
-cd /Users/lev/Dev/claude-code-analytics
+cd /Users/lev/Dev/tokenscope
 npx create-next-app@latest web --typescript --tailwind --app --src-dir
 cd web
 npx shadcn@latest init

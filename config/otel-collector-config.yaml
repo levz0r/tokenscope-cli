@@ -43,7 +43,7 @@ exporters:
     endpoint: "0.0.0.0:8889"
     namespace: claude_code
     const_labels:
-      source: claude-code-analytics
+      source: tokenscope
     resource_to_telemetry_conversion:
       enabled: true
 

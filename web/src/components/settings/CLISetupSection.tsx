@@ -11,7 +11,7 @@ const tools = [
     name: 'Claude Code',
     logo: '/logos/claude.svg',
     status: 'available',
-    installCommand: 'curl -sSL https://raw.githubusercontent.com/levz0r/claude-code-analytics/main/install.sh | bash',
+    installCommand: 'curl -sSL https://raw.githubusercontent.com/levz0r/tokenscope/main/install.sh | bash',
     loginCommand: (apiKey: string) => `cc-analytics login ${apiKey ? apiKey.slice(0, 10) + '...' : 'YOUR_API_KEY'}`,
     description: 'Track your Claude Code sessions, tool usage, and code changes.',
   },

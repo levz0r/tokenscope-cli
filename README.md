@@ -17,7 +17,7 @@ A comprehensive analytics system for tracking Claude Code usage, including tool 
 ### Installation
 
 ```bash
-cd /path/to/claude-code-analytics
+cd /path/to/tokenscope
 chmod +x install.sh
 ./install.sh
 ```
@@ -141,7 +141,7 @@ Add to `~/.claude/settings.json`:
 ## File Structure
 
 ```
-claude-code-analytics/
+tokenscope/
 ├── bin/
 │   └── cc-analytics          # CLI tool
 ├── hooks/

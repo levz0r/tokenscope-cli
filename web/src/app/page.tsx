@@ -129,7 +129,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative z-10 container mx-auto px-6 pt-24 pb-16 text-center">
         <Link
-          href="https://github.com/levz0r/claude-code-analytics"
+          href="https://github.com/levz0r/tokenscope"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8 hover:bg-emerald-500/15 transition-colors"
@@ -159,7 +159,7 @@ export default function Home() {
             </Button>
           </Link>
           <Link
-            href="https://github.com/levz0r/claude-code-analytics"
+            href="https://github.com/levz0r/tokenscope"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -376,7 +376,7 @@ export default function Home() {
             <p className="text-gray-500 mb-1"># Install with one command</p>
             <p className="text-emerald-400 break-all">
               curl -sSL
-              https://raw.githubusercontent.com/levz0r/claude-code-analytics/main/install.sh
+              https://raw.githubusercontent.com/levz0r/tokenscope/main/install.sh
               | bash
             </p>
           </div>
@@ -403,7 +403,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-500">
             <Link
-              href="https://github.com/levz0r/claude-code-analytics"
+              href="https://github.com/levz0r/tokenscope"
               className="hover:text-white transition-colors"
             >
               GitHub

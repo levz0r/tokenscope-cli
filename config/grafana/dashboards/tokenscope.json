@@ -601,7 +601,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Claude Code Analytics",
-  "uid": "claude-code-analytics",
+  "uid": "tokenscope",
   "version": 1,
   "weekStart": ""
 }
