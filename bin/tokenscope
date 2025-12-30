@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude Code Analytics CLI
+# TokenScope CLI
 # View and analyze your Claude Code usage statistics
 # Version: 1.0.0
 
@@ -506,7 +506,7 @@ cloud_login() {
         echo -e "${GREEN}✓ Successfully logged in!${NC}"
         echo
         echo -e "Your analytics will now sync to the cloud."
-        echo -e "Run ${CYAN}cc-analytics sync${NC} to sync existing data."
+        echo -e "Run ${CYAN}tokenscope sync${NC} to sync existing data."
     else
         echo -e "${RED}Error: Invalid API key or server error (HTTP $http_code)${NC}"
         echo -e "${DIM}$body${NC}"
@@ -535,7 +535,7 @@ cloud_status() {
     if ! is_logged_in 2>/dev/null; then
         echo -e "  Status:        ${YELLOW}Not connected${NC}"
         echo
-        echo -e "  Run ${CYAN}cc-analytics login${NC} to connect to cloud."
+        echo -e "  Run ${CYAN}tokenscope login${NC} to connect to cloud."
         return
     fi
 
@@ -585,7 +585,7 @@ cloud_status() {
 
         if [[ $total_unsynced -gt 0 ]]; then
             echo
-            echo -e "  Run ${CYAN}cc-analytics sync${NC} to sync now."
+            echo -e "  Run ${CYAN}tokenscope sync${NC} to sync now."
         fi
     fi
 }
@@ -595,7 +595,7 @@ cloud_sync() {
     local quiet="${1:-}"
 
     if ! is_logged_in 2>/dev/null; then
-        [[ "$quiet" != "--quiet" ]] && echo -e "${RED}Error: Not logged in. Run 'cc-analytics login' first.${NC}"
+        [[ "$quiet" != "--quiet" ]] && echo -e "${RED}Error: Not logged in. Run 'tokenscope login' first.${NC}"
         exit 1
     fi
 
@@ -697,9 +697,9 @@ cloud_sync() {
 
 # Show help
 show_help() {
-    echo -e "${BOLD}Claude Code Analytics CLI${NC}"
+    echo -e "${BOLD}TokenScope CLI${NC}"
     echo
-    echo -e "${BOLD}Usage:${NC} cc-analytics <command> [options]"
+    echo -e "${BOLD}Usage:${NC} tokenscope <command> [options]"
     echo
     echo -e "${BOLD}Local Analytics:${NC}"
     echo -e "  ${GREEN}summary${NC}            Show overview dashboard (default)"
@@ -725,10 +725,10 @@ show_help() {
     echo -e "  ${GREEN}help${NC}               Show this help message"
     echo
     echo -e "${BOLD}Examples:${NC}"
-    echo -e "  cc-analytics                    # Show summary"
-    echo -e "  cc-analytics sessions 20        # Show last 20 sessions"
-    echo -e "  cc-analytics login sk_abc123    # Login with API key"
-    echo -e "  cc-analytics sync               # Sync to cloud"
+    echo -e "  tokenscope                    # Show summary"
+    echo -e "  tokenscope sessions 20        # Show last 20 sessions"
+    echo -e "  tokenscope login sk_abc123    # Login with API key"
+    echo -e "  tokenscope sync               # Sync to cloud"
     echo
     echo -e "${DIM}Database location: $DB_FILE${NC}"
 }

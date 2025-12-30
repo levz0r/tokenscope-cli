@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude Code Analytics - Installation Script
+# TokenScope - Installation Script
 #
 # This script installs the analytics hooks and CLI tool for tracking
 # Claude Code usage, file modifications, and git operations.
@@ -25,7 +25,7 @@ CLAUDE_SETTINGS="$HOME/.claude/settings.json"
 
 echo -e "${BOLD}${CYAN}"
 echo "╔═══════════════════════════════════════════════════════════════╗"
-echo "║           Claude Code Analytics - Installation                ║"
+echo "║           TokenScope - Installation                ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
@@ -62,13 +62,13 @@ echo -e "${BLUE}Installing analytics files...${NC}"
 cp "$SCRIPT_DIR/hooks/analytics-hook.sh" "$INSTALL_DIR/hooks/"
 cp "$SCRIPT_DIR/lib/db.sh" "$INSTALL_DIR/lib/"
 cp "$SCRIPT_DIR/lib/sync-daemon.sh" "$INSTALL_DIR/lib/"
-cp "$SCRIPT_DIR/bin/cc-analytics" "$BIN_DIR/"
+cp "$SCRIPT_DIR/bin/tokenscope" "$BIN_DIR/"
 
 # Make scripts executable
 chmod +x "$INSTALL_DIR/hooks/analytics-hook.sh"
 chmod +x "$INSTALL_DIR/lib/db.sh"
 chmod +x "$INSTALL_DIR/lib/sync-daemon.sh"
-chmod +x "$BIN_DIR/cc-analytics"
+chmod +x "$BIN_DIR/tokenscope"
 
 echo -e "${GREEN}✓ Files installed${NC}"
 
@@ -207,7 +207,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     echo
     echo -e "${BLUE}Background Sync Setup (Optional)${NC}"
     echo -e "Would you like to enable automatic cloud sync every 5 minutes?"
-    echo -e "This requires logging in with: ${CYAN}cc-analytics login${NC}"
+    echo -e "This requires logging in with: ${CYAN}tokenscope login${NC}"
     read -p "Enable background sync? (y/N): " ENABLE_SYNC
 
     if [[ "$ENABLE_SYNC" =~ ^[Yy]$ ]]; then
@@ -261,7 +261,7 @@ PLIST
         echo -e "  Logs: /tmp/claude-analytics-sync.out"
     else
         echo -e "${YELLOW}Skipped background sync setup${NC}"
-        echo -e "  You can manually sync with: ${CYAN}cc-analytics sync${NC}"
+        echo -e "  You can manually sync with: ${CYAN}tokenscope sync${NC}"
     fi
 fi
 
@@ -274,24 +274,24 @@ echo -e "${BOLD}Files installed:${NC}"
 echo -e "  ${DIM}Hooks:${NC}     $INSTALL_DIR/hooks/"
 echo -e "  ${DIM}Library:${NC}   $INSTALL_DIR/lib/"
 echo -e "  ${DIM}Database:${NC}  $INSTALL_DIR/analytics.db"
-echo -e "  ${DIM}CLI:${NC}       $BIN_DIR/cc-analytics"
+echo -e "  ${DIM}CLI:${NC}       $BIN_DIR/tokenscope"
 echo
 echo -e "${BOLD}Local Analytics:${NC}"
-echo -e "  ${CYAN}cc-analytics${NC}           # Show summary dashboard"
-echo -e "  ${CYAN}cc-analytics sessions${NC}  # List recent sessions"
-echo -e "  ${CYAN}cc-analytics tools${NC}     # Show tool usage"
-echo -e "  ${CYAN}cc-analytics files${NC}     # Show modified files"
-echo -e "  ${CYAN}cc-analytics git${NC}       # Show git operations"
-echo -e "  ${CYAN}cc-analytics times${NC}     # Time analytics"
-echo -e "  ${CYAN}cc-analytics help${NC}      # Show all commands"
+echo -e "  ${CYAN}tokenscope${NC}           # Show summary dashboard"
+echo -e "  ${CYAN}tokenscope sessions${NC}  # List recent sessions"
+echo -e "  ${CYAN}tokenscope tools${NC}     # Show tool usage"
+echo -e "  ${CYAN}tokenscope files${NC}     # Show modified files"
+echo -e "  ${CYAN}tokenscope git${NC}       # Show git operations"
+echo -e "  ${CYAN}tokenscope times${NC}     # Time analytics"
+echo -e "  ${CYAN}tokenscope help${NC}      # Show all commands"
 echo
 echo -e "${BOLD}Cloud Sync (Optional):${NC}"
-echo -e "  ${CYAN}cc-analytics login${NC}     # Connect to cloud dashboard"
-echo -e "  ${CYAN}cc-analytics status${NC}    # Show sync status"
-echo -e "  ${CYAN}cc-analytics sync${NC}      # Sync data to cloud"
-echo -e "  ${CYAN}cc-analytics logout${NC}    # Disconnect from cloud"
+echo -e "  ${CYAN}tokenscope login${NC}     # Connect to cloud dashboard"
+echo -e "  ${CYAN}tokenscope status${NC}    # Show sync status"
+echo -e "  ${CYAN}tokenscope sync${NC}      # Sync data to cloud"
+echo -e "  ${CYAN}tokenscope logout${NC}    # Disconnect from cloud"
 echo
-echo -e "${YELLOW}Note: Restart your terminal or run 'source ~/.zshrc' to use cc-analytics${NC}"
+echo -e "${YELLOW}Note: Restart your terminal or run 'source ~/.zshrc' to use tokenscope${NC}"
 echo
 echo -e "${BOLD}Cloud Dashboard:${NC}"
 echo -e "  Sign up at: ${CYAN}https://claude-analytics.vercel.app${NC}"

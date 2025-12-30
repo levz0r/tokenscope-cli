@@ -1,4 +1,4 @@
-# Claude Code Analytics SaaS MVP Plan
+# TokenScope SaaS MVP Plan
 
 ## Status: Phase 4 - Billing Integration
 
@@ -38,7 +38,7 @@ Transform the existing local-only analytics CLI into a SaaS product with:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     LOCAL (existing)                         │
-│  Claude Code → Hooks → SQLite → cc-analytics CLI            │
+│  Claude Code → Hooks → SQLite → tokenscope CLI            │
 └─────────────────────┬───────────────────────────────────────┘
                       │ Background sync daemon
                       ▼
@@ -105,10 +105,10 @@ See `web/supabase/schema.sql` ✅ Created
 ### Checklist
 
 - [x] Add sync tracking columns to SQLite schema
-- [x] Create `cc-analytics login` command
-- [x] Create `cc-analytics logout` command
-- [x] Create `cc-analytics sync` command
-- [x] Create `cc-analytics status` command
+- [x] Create `tokenscope login` command
+- [x] Create `tokenscope logout` command
+- [x] Create `tokenscope sync` command
+- [x] Create `tokenscope status` command
 - [x] Create background sync daemon (`lib/sync-daemon.sh`)
 - [x] Create launchd plist for periodic sync
 - [x] Update `install.sh` to set up sync
@@ -119,7 +119,7 @@ See `web/supabase/schema.sql` ✅ Created
 | File | Changes |
 |------|---------|
 | `lib/db.sh` | Add `synced`, `cloud_id` columns, `cloud_auth` table |
-| `bin/cc-analytics` | Add `login`, `logout`, `sync`, `status` commands |
+| `bin/tokenscope` | Add `login`, `logout`, `sync`, `status` commands |
 
 ### Files to Create
 

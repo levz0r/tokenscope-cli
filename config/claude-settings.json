@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/settings.schema.json",
-  "_comment": "Claude Code Analytics - Hook Configuration",
+  "_comment": "TokenScope - Hook Configuration",
   "_instructions": "Merge this into your ~/.claude/settings.json or project .claude/settings.json",
 
   "hooks": {

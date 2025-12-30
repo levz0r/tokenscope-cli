@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude Code Analytics - Background Sync Daemon
+# TokenScope - Background Sync Daemon
 # This script syncs local analytics data to the cloud periodically.
 # It's designed to be run by launchd (macOS) or cron (Linux).
 

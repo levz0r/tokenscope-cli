@@ -1,4 +1,4 @@
-# OpenTelemetry Collector Configuration for Claude Code Analytics
+# OpenTelemetry Collector Configuration for TokenScope
 #
 # This configuration receives metrics from Claude Code and stores them
 # in Prometheus-compatible format for visualization in Grafana.

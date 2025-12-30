@@ -4,7 +4,7 @@ This file provides instructions for Claude Code when working on this project.
 
 ## Project Overview
 
-Claude Code Analytics is an open-source tool for tracking Claude Code usage locally, with an optional paid SaaS tier for teams.
+TokenScope is an open-source tool for tracking Claude Code usage locally, with an optional paid SaaS tier for teams.
 
 ## Current Status
 
@@ -53,7 +53,7 @@ Always check `PLAN.md` for the current phase and progress before starting work.
 | `PLAN.md` | Master plan with phases and checklists |
 | `CLAUDE.md` | These instructions (you are here) |
 | `README.md` | Public documentation |
-| `bin/cc-analytics` | CLI tool |
+| `bin/tokenscope` | CLI tool |
 | `hooks/analytics-hook.sh` | Claude Code hook |
 | `lib/db.sh` | Database functions |
 | `web/` | Next.js SaaS app (to be created) |
@@ -71,7 +71,7 @@ Always check `PLAN.md` for the current phase and progress before starting work.
 
 ```bash
 # Run CLI locally
-./bin/cc-analytics
+./bin/tokenscope
 
 # Start web dev server (once created)
 cd web && npm run dev

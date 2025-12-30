@@ -1,4 +1,4 @@
-# Claude Code Analytics - OpenTelemetry Stack
+# TokenScope - OpenTelemetry Stack
 #
 # This docker-compose file sets up a complete observability stack for
 # collecting and visualizing Claude Code metrics including token usage.
@@ -26,7 +26,7 @@ services:
   # OpenTelemetry Collector - receives metrics from Claude Code
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
-    container_name: cc-analytics-otel
+    container_name: tokenscope-otel
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
@@ -40,7 +40,7 @@ services:
   # Prometheus - stores and queries metrics
   prometheus:
     image: prom/prometheus:latest
-    container_name: cc-analytics-prometheus
+    container_name: tokenscope-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -58,7 +58,7 @@ services:
   # Grafana - visualization dashboard
   grafana:
     image: grafana/grafana:latest
-    container_name: cc-analytics-grafana
+    container_name: tokenscope-grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

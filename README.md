@@ -1,4 +1,4 @@
-# Claude Code Analytics
+# TokenScope
 
 A comprehensive analytics system for tracking Claude Code usage, including tool executions, file modifications, git operations, and token usage.
 
@@ -24,7 +24,7 @@ chmod +x install.sh
 
 This will:
 1. Install hooks to `~/.claude/analytics/`
-2. Install the CLI to `~/.local/bin/cc-analytics`
+2. Install the CLI to `~/.local/bin/tokenscope`
 3. Configure Claude Code hooks in `~/.claude/settings.json`
 4. Initialize the SQLite database
 
@@ -34,31 +34,31 @@ After installation, use the CLI to view your analytics:
 
 ```bash
 # Show summary dashboard
-cc-analytics
+tokenscope
 
 # List recent sessions
-cc-analytics sessions
+tokenscope sessions
 
 # Show tool usage (last 7 days)
-cc-analytics tools
+tokenscope tools
 
 # Show most modified files
-cc-analytics files
+tokenscope files
 
 # Show git operations
-cc-analytics git
+tokenscope git
 
 # Show daily trends
-cc-analytics daily
+tokenscope daily
 
 # Show projects by activity
-cc-analytics projects
+tokenscope projects
 
 # Export to JSON
-cc-analytics export my-analytics.json
+tokenscope export my-analytics.json
 
 # Show help
-cc-analytics help
+tokenscope help
 ```
 
 ## Architecture
@@ -82,7 +82,7 @@ cc-analytics help
           │                         │
           ▼                         ▼
    ┌────────────┐          ┌─────────────────┐
-   │ cc-analytics│          │ Grafana Dashboard│
+   │ tokenscope│          │ Grafana Dashboard│
    │    CLI     │          │   (optional)    │
    └────────────┘          └─────────────────┘
 ```
@@ -143,7 +143,7 @@ Add to `~/.claude/settings.json`:
 ```
 tokenscope/
 ├── bin/
-│   └── cc-analytics          # CLI tool
+│   └── tokenscope          # CLI tool
 ├── hooks/
 │   └── analytics-hook.sh     # Main hook script
 ├── lib/
@@ -177,7 +177,7 @@ sqlite3 ~/.claude/analytics/analytics.db "SELECT * FROM sessions LIMIT 10;"
 ```bash
 # Remove installed files
 rm -rf ~/.claude/analytics
-rm ~/.local/bin/cc-analytics
+rm ~/.local/bin/tokenscope
 
 # Remove hooks from settings (edit manually)
 # Edit ~/.claude/settings.json and remove the hooks section

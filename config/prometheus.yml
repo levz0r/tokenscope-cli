@@ -1,4 +1,4 @@
-# Prometheus Configuration for Claude Code Analytics
+# Prometheus Configuration for TokenScope
 # Scrapes metrics from the OpenTelemetry Collector
 
 global:

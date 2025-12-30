@@ -1,5 +1,5 @@
 #!/bin/bash
-# Database initialization and helper functions for Claude Code Analytics
+# Database initialization and helper functions for TokenScope
 # Version: 1.0.0
 
 # Default database location
