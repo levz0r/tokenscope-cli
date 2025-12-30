@@ -50,6 +50,7 @@ export async function GET(
     const weeklyData: Record<string, { ai: number; human: number }> = {}
 
     for (const commit of commits) {
+      if (!commit.committed_at) continue
       const date = new Date(commit.committed_at)
       // Get start of week (Sunday)
       const startOfWeek = new Date(date)

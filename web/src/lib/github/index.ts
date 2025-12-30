@@ -135,9 +135,9 @@ export function parseCommit(commit: {
   sha: string
   commit: {
     message: string
-    author: { name: string; email: string; date: string } | null
+    author: { name?: string; email?: string; date?: string } | null
   }
-  stats?: { additions: number; deletions: number }
+  stats?: { additions?: number; deletions?: number }
 }): CommitStats {
   const aiTool = detectAITool(commit.commit.message)
   return {

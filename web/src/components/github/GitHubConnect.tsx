@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Github, ExternalLink, RefreshCw, Loader2, CheckCircle, XCircle, ChevronDown, ChevronRight, Bot, GitCommit } from 'lucide-react'
+import { Github, ExternalLink, RefreshCw, Loader2, CheckCircle, XCircle, ChevronDown, ChevronRight, Bot, GitCommit, Building2 } from 'lucide-react'
 import { buttonStyles } from '@/lib/styles'
 import { CommitSparkline } from './CommitSparkline'
 
@@ -21,6 +21,9 @@ interface Repo {
   is_active: boolean
   last_push_at: string | null
   ai_percentage: number
+  source: 'personal' | 'org'
+  org_name?: string
+  org_id?: string
   analysis: {
     total_commits: number
     ai_commits: number
@@ -310,15 +313,23 @@ function RepoCard({ repo }: { repo: Repo }) {
             <ChevronRight className="h-4 w-4 text-gray-500 flex-shrink-0" />
           )}
           <div className="min-w-0">
-            <a
-              href={`https://github.com/${repo.repo_full_name}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-white hover:underline truncate block"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {repo.repo_full_name}
-            </a>
+            <div className="flex items-center gap-2">
+              <a
+                href={`https://github.com/${repo.repo_full_name}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-white hover:underline truncate"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {repo.repo_full_name}
+              </a>
+              {repo.source === 'org' && repo.org_name && (
+                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded flex-shrink-0">
+                  <Building2 className="h-3 w-3" />
+                  {repo.org_name}
+                </span>
+              )}
+            </div>
             {repo.analysis && (
               <p className="text-sm text-gray-500">
                 {repo.analysis.ai_commits} / {repo.analysis.total_commits} commits by AI

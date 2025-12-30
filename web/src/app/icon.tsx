@@ -6,21 +6,27 @@ export const size = {
 }
 export const contentType = 'image/png'
 
-export default function Icon() {
+export default async function Icon() {
+  const geistBold = await fetch(
+    new URL('https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.0.3/files/geist-sans-latin-700-normal.woff')
+  ).then((res) => res.arrayBuffer())
+
   return new ImageResponse(
     (
       <div
         style={{
-          fontSize: 18,
-          background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+          fontSize: 14,
+          background: 'linear-gradient(135deg, #34d399 0%, #059669 100%)',
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          fontWeight: 'bold',
+          fontFamily: 'Geist',
+          fontWeight: 700,
           borderRadius: 6,
+          letterSpacing: '-0.02em',
         }}
       >
         TS
@@ -28,6 +34,14 @@ export default function Icon() {
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: 'Geist',
+          data: geistBold,
+          style: 'normal',
+          weight: 700,
+        },
+      ],
     }
   )
 }

@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       agent_spawns: {
@@ -236,6 +211,47 @@ export type Database = {
           },
         ]
       }
+      org_github_installations: {
+        Row: {
+          connected_by: string
+          created_at: string | null
+          github_org_id: number
+          github_org_name: string
+          id: string
+          installation_id: number
+          org_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          connected_by: string
+          created_at?: string | null
+          github_org_id: number
+          github_org_name: string
+          id?: string
+          installation_id: number
+          org_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          connected_by?: string
+          created_at?: string | null
+          github_org_id?: number
+          github_org_name?: string
+          id?: string
+          installation_id?: number
+          org_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_github_installations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_invites: {
         Row: {
           accepted_at: string | null
@@ -382,8 +398,10 @@ export type Database = {
           ai_commits: number | null
           ai_lines_added: number | null
           ai_lines_removed: number | null
+          ai_percentage: number | null
           analyzed_at: string | null
           id: string
+          last_analyzed_at: string | null
           repo_id: string
           total_commits: number | null
           total_lines: number | null
@@ -392,8 +410,10 @@ export type Database = {
           ai_commits?: number | null
           ai_lines_added?: number | null
           ai_lines_removed?: number | null
+          ai_percentage?: number | null
           analyzed_at?: string | null
           id?: string
+          last_analyzed_at?: string | null
           repo_id: string
           total_commits?: number | null
           total_lines?: number | null
@@ -402,8 +422,10 @@ export type Database = {
           ai_commits?: number | null
           ai_lines_added?: number | null
           ai_lines_removed?: number | null
+          ai_percentage?: number | null
           analyzed_at?: string | null
           id?: string
+          last_analyzed_at?: string | null
           repo_id?: string
           total_commits?: number | null
           total_lines?: number | null
@@ -458,6 +480,7 @@ export type Database = {
       }
       repo_commits: {
         Row: {
+          ai_tool: string | null
           author_email: string | null
           author_name: string | null
           commit_message: string | null
@@ -471,6 +494,7 @@ export type Database = {
           repo_id: string
         }
         Insert: {
+          ai_tool?: string | null
           author_email?: string | null
           author_name?: string | null
           commit_message?: string | null
@@ -484,6 +508,7 @@ export type Database = {
           repo_id: string
         }
         Update: {
+          ai_tool?: string | null
           author_email?: string | null
           author_name?: string | null
           commit_message?: string | null
@@ -744,37 +769,46 @@ export type Database = {
       }
       tracked_repos: {
         Row: {
+          ai_percentage: number | null
           created_at: string | null
           default_branch: string | null
           id: string
-          installation_id: string
+          installation_id: string | null
           is_active: boolean | null
           last_analyzed_at: string | null
           last_push_at: string | null
+          last_synced_at: string | null
+          org_installation_id: string | null
           repo_full_name: string
           repo_id: number
           repo_name: string
         }
         Insert: {
+          ai_percentage?: number | null
           created_at?: string | null
           default_branch?: string | null
           id?: string
-          installation_id: string
+          installation_id?: string | null
           is_active?: boolean | null
           last_analyzed_at?: string | null
           last_push_at?: string | null
+          last_synced_at?: string | null
+          org_installation_id?: string | null
           repo_full_name: string
           repo_id: number
           repo_name: string
         }
         Update: {
+          ai_percentage?: number | null
           created_at?: string | null
           default_branch?: string | null
           id?: string
-          installation_id?: string
+          installation_id?: string | null
           is_active?: boolean | null
           last_analyzed_at?: string | null
           last_push_at?: string | null
+          last_synced_at?: string | null
+          org_installation_id?: string | null
           repo_full_name?: string
           repo_id?: number
           repo_name?: string
@@ -785,6 +819,13 @@ export type Database = {
             columns: ["installation_id"]
             isOneToOne: false
             referencedRelation: "github_installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tracked_repos_org_installation_id_fkey"
+            columns: ["org_installation_id"]
+            isOneToOne: false
+            referencedRelation: "org_github_installations"
             referencedColumns: ["id"]
           },
         ]
@@ -936,9 +977,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

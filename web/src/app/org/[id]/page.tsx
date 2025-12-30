@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Users, Building2, Terminal, FileCode, GitCommit, Clock, FolderKanban, Crown, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { DeleteOrgButton } from '@/components/org/DeleteOrgButton'
+import { OrgGitHubConnect } from '@/components/org/OrgGitHubConnect'
 
 interface OrgMember {
   id: string
@@ -300,6 +301,13 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ i
           </CardContent>
         </Card>
       </div>
+
+      {/* GitHub Integration */}
+      <OrgGitHubConnect
+        orgId={org.id}
+        orgName={org.name}
+        userRole={org.role as 'owner' | 'admin' | 'member'}
+      />
 
       {/* Members Preview */}
       <Card className="border-white/5 bg-white/[0.02]">
