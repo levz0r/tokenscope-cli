@@ -38,7 +38,7 @@ show_summary() {
     check_db
 
     echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${CYAN}                    CLAUDE CODE ANALYTICS                       ${NC}"
+    echo -e "${BOLD}${CYAN}                    TOKENSCOPE                       ${NC}"
     echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════════${NC}"
     echo
 
