@@ -61,6 +61,42 @@ tokenscope export my-analytics.json
 tokenscope help
 ```
 
+## Cloud Sync
+
+Sync your analytics to the cloud for team dashboards, cross-device access, and historical tracking.
+
+### Using TokenScope Cloud (tokenscope.dev)
+
+```bash
+# Sign up at https://tokenscope.dev and get your API key
+
+# Login to cloud
+tokenscope login YOUR_API_KEY
+
+# Sync your data
+tokenscope sync
+
+# Check connection status
+tokenscope status
+
+# Logout
+tokenscope logout
+```
+
+### Self-Hosted
+
+You can deploy your own TokenScope server and sync to it instead:
+
+```bash
+# Login to your self-hosted server
+tokenscope login YOUR_API_KEY https://your-server.com
+
+# Sync works the same way
+tokenscope sync
+```
+
+The server URL is stored locally and used for all subsequent syncs.
+
 ## Architecture
 
 ```
@@ -185,7 +221,11 @@ rm ~/.local/bin/tokenscope
 
 ## Privacy
 
-All data is stored locally on your machine. No data is sent to external servers unless you configure the OpenTelemetry stack with external exporters.
+All data is stored locally on your machine by default. Data is only sent to external servers if you:
+- Explicitly run `tokenscope login` and `tokenscope sync` to sync to the cloud
+- Configure the OpenTelemetry stack with external exporters
+
+You can self-host the TokenScope server for full control over your data.
 
 ## License
 
