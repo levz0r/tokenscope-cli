@@ -716,7 +716,7 @@ show_help() {
     echo -e "  ${GREEN}reset${NC}              Clear all analytics data"
     echo
     echo -e "${BOLD}Cloud Sync:${NC}"
-    echo -e "  ${GREEN}login${NC} [key]        Login to cloud with API key"
+    echo -e "  ${GREEN}login${NC} <key> [url]  Login to cloud (default: tokenscope.dev)"
     echo -e "  ${GREEN}logout${NC}             Logout from cloud"
     echo -e "  ${GREEN}status${NC}             Show cloud connection status"
     echo -e "  ${GREEN}sync${NC} [--quiet]     Sync local data to cloud"
@@ -727,8 +727,11 @@ show_help() {
     echo -e "${BOLD}Examples:${NC}"
     echo -e "  tokenscope                    # Show summary"
     echo -e "  tokenscope sessions 20        # Show last 20 sessions"
-    echo -e "  tokenscope login sk_abc123    # Login with API key"
+    echo -e "  tokenscope login sk_abc123    # Login to tokenscope.dev"
     echo -e "  tokenscope sync               # Sync to cloud"
+    echo
+    echo -e "${BOLD}Self-hosted:${NC}"
+    echo -e "  tokenscope login API_KEY https://my-server.com"
     echo
     echo -e "${DIM}Database location: $DB_FILE${NC}"
 }
