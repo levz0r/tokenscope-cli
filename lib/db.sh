@@ -221,13 +221,17 @@ record_git_operation() {
     local operation_type="$3"
     local exit_code="${4:-0}"
 
-    # Escape single quotes in command
+    # Truncate command to first 500 chars to avoid issues with complex commands
+    command="${command:0:500}"
+    # Escape single quotes for SQL
     command="${command//\'/\'\'}"
+    # Remove any null bytes and control characters that could break SQL
+    command=$(echo "$command" | tr -d '\000-\011\013-\037')
 
     sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
         INSERT INTO git_operations (session_id, command, operation_type, exit_code, timestamp)
         VALUES ('$session_id', '$command', '$operation_type', $exit_code, datetime('now'));
-    "
+    " 2>/dev/null || true
 }
 
 # Record token usage
