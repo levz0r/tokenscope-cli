@@ -475,7 +475,7 @@ fi
 # Login to cloud
 cloud_login() {
     local api_key="$1"
-    local api_url="${2:-https://claude-analytics.vercel.app}"
+    local api_url="${2:-https://tokenscope.dev}"
 
     if [[ -z "$api_key" ]]; then
         echo -e "${BOLD}${CYAN}Cloud Login${NC}"

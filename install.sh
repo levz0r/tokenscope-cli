@@ -294,6 +294,6 @@ echo
 echo -e "${YELLOW}Note: Restart your terminal or run 'source ~/.zshrc' to use tokenscope${NC}"
 echo
 echo -e "${BOLD}Cloud Dashboard:${NC}"
-echo -e "  Sign up at: ${CYAN}https://claude-analytics.vercel.app${NC}"
+echo -e "  Sign up at: ${CYAN}https://tokenscope.dev${NC}"
 echo -e "  View team analytics, share with managers, track across devices"
 echo
