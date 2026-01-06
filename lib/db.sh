@@ -165,9 +165,13 @@ record_session_start() {
     local project_name="$4"
 
     ensure_db_dir
+    # Use INSERT OR IGNORE to preserve original start_time when session resumes
+    # Only update project_name if session already exists (in case it was unknown)
     sqlite3 -cmd ".timeout 5000" "$DB_FILE" "
-        INSERT OR REPLACE INTO sessions (session_id, start_time, source, cwd, project_name)
+        INSERT OR IGNORE INTO sessions (session_id, start_time, source, cwd, project_name)
         VALUES ('$session_id', datetime('now'), '$source', '$cwd', '$project_name');
+        UPDATE sessions SET project_name = '$project_name', cwd = '$cwd'
+        WHERE session_id = '$session_id' AND (project_name IS NULL OR project_name = 'Unknown');
     "
 }
 
