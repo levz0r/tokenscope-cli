@@ -1,0 +1,44 @@
+name: Test Installation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-production:
+    name: Test Production Install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build test container
+        run: docker build -t tokenscope-test ./tests
+
+      - name: Run installation tests
+        run: |
+          docker run --rm \
+            -e INSTALL_SOURCE=production \
+            tokenscope-test
+
+  test-local:
+    name: Test Local Install
+    runs-on: ubuntu-latest
+    env:
+      WORKSPACE: ${{ github.workspace }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build test container
+        run: docker build -t tokenscope-test ./tests
+
+      - name: Run installation tests with local files
+        run: |
+          docker run --rm \
+            -e INSTALL_SOURCE=local \
+            -v "${WORKSPACE}:/repo:ro" \
+            tokenscope-test
