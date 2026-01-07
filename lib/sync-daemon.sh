@@ -75,7 +75,7 @@ do_sync() {
         '{sessions: $sessions, tool_uses: $tool_uses, file_changes: $file_changes, git_operations: $git_operations}')
 
     # Send to API
-    local response=$(curl -s -w "\n%{http_code}" \
+    local response=$(curl -sL -w "\n%{http_code}" \
         --max-time 30 \
         -X POST \
         -H "Authorization: Bearer $api_key" \

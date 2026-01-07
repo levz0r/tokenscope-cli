@@ -475,7 +475,7 @@ fi
 # Login to cloud
 cloud_login() {
     local api_key="$1"
-    local api_url="${2:-https://tokenscope.dev}"
+    local api_url="${2:-https://app.tokenscope.dev}"
 
     if [[ -z "$api_key" ]]; then
         echo -e "${BOLD}${CYAN}Cloud Login${NC}"
@@ -492,7 +492,7 @@ cloud_login() {
     echo -e "${DIM}Verifying API key...${NC}"
 
     # Test the API key
-    local response=$(curl -s -w "\n%{http_code}" \
+    local response=$(curl -sL -w "\n%{http_code}" \
         -H "Authorization: Bearer $api_key" \
         "$api_url/api/analytics/summary")
 
@@ -653,7 +653,7 @@ cloud_sync() {
         '{sessions: $sessions, tool_uses: $tool_uses, file_changes: $file_changes, git_operations: $git_operations, skill_uses: $skill_uses, agent_spawns: $agent_spawns, installed_plugins: $installed_plugins}')
 
     # Send to API
-    local response=$(curl -s -w "\n%{http_code}" \
+    local response=$(curl -sL -w "\n%{http_code}" \
         -X POST \
         -H "Authorization: Bearer $api_key" \
         -H "Content-Type: application/json" \
