@@ -68,7 +68,7 @@ Sync your analytics to the cloud for team dashboards, cross-device access, and h
 ### Using TokenScope Cloud (tokenscope.dev)
 
 ```bash
-# Sign up at https://tokenscope.dev and get your API key
+# Sign up at https://tokenscope.dev and get your API key from Settings
 
 # Login to cloud
 tokenscope login YOUR_API_KEY
