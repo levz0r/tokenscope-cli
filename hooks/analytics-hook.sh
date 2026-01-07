@@ -11,7 +11,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="$(dirname "$SCRIPT_DIR")/lib"
 
-# Source database functions
+# Source utility and database functions
+source "$LIB_DIR/utils.sh"
 source "$LIB_DIR/db.sh"
 
 # Initialize database if needed (runs only once)
@@ -30,6 +31,22 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // empty')
 # Exit if no session ID
 if [[ -z "$SESSION_ID" ]]; then
     exit 0
+fi
+
+# Privacy-first tracking: only collect data if .tokenscope marker exists
+# Check once on SessionStart, then rely on session existence in DB for other events
+if [[ "$HOOK_EVENT" == "SessionStart" ]]; then
+    # Check if tracking is allowed for this directory
+    if ! is_tracking_allowed "$CWD"; then
+        exit 0  # No marker = no tracking, don't create session
+    fi
+else
+    # For all other events, check if session exists in DB
+    # If session doesn't exist, tracking was not allowed at start
+    SESSION_EXISTS=$(sqlite3 -cmd ".timeout 5000" "$DB_FILE" "SELECT COUNT(*) FROM sessions WHERE session_id = '$SESSION_ID';" 2>/dev/null || echo "0")
+    if [[ "$SESSION_EXISTS" != "1" ]]; then
+        exit 0  # Session not tracked, skip this event
+    fi
 fi
 
 # Extract project name from cwd

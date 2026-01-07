@@ -221,7 +221,23 @@ rm ~/.local/bin/tokenscope
 
 ## Privacy
 
-All data is stored locally on your machine by default. Data is only sent to external servers if you:
+**TokenScope uses privacy-first, opt-in tracking.** No data is collected unless you explicitly enable it.
+
+### Enabling Tracking
+
+To enable tracking for a project, create a `.tokenscope` marker file in the project root:
+
+```bash
+touch /path/to/your/project/.tokenscope
+```
+
+- **No marker = no tracking** - Projects without `.tokenscope` are completely ignored
+- **Marker in parent = children tracked** - A marker in a parent directory enables tracking for all subdirectories
+- **Local by default** - Even with tracking enabled, data stays on your machine
+
+### Cloud Sync
+
+Data is only sent to external servers if you:
 - Explicitly run `tokenscope login` and `tokenscope sync` to sync to the cloud
 - Configure the OpenTelemetry stack with external exporters
 

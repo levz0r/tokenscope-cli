@@ -130,6 +130,10 @@ For dashboard numbers and statistics:
 4. **Keep costs low** - use free tiers where possible
 5. **Privacy first** - local data stays local unless user opts into sync
 6. **Use shared styles** - Always import from `@/lib/styles` for buttons/inputs
+7. **Keep install.sh files in sync** - There are two install.sh files that must stay synchronized:
+   - `tokenscope-cli/install.sh` - Local install (copies files)
+   - `tokenscope-landing/public/install.sh` - Web install (downloads from GitHub)
+   When adding/removing lib files, update BOTH install scripts.
 
 ## Git Workflow
 

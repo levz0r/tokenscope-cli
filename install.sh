@@ -60,12 +60,14 @@ mkdir -p "$BIN_DIR"
 echo -e "${BLUE}Installing analytics files...${NC}"
 
 cp "$SCRIPT_DIR/hooks/analytics-hook.sh" "$INSTALL_DIR/hooks/"
+cp "$SCRIPT_DIR/lib/utils.sh" "$INSTALL_DIR/lib/"
 cp "$SCRIPT_DIR/lib/db.sh" "$INSTALL_DIR/lib/"
 cp "$SCRIPT_DIR/lib/sync-daemon.sh" "$INSTALL_DIR/lib/"
 cp "$SCRIPT_DIR/bin/tokenscope" "$BIN_DIR/"
 
 # Make scripts executable
 chmod +x "$INSTALL_DIR/hooks/analytics-hook.sh"
+chmod +x "$INSTALL_DIR/lib/utils.sh"
 chmod +x "$INSTALL_DIR/lib/db.sh"
 chmod +x "$INSTALL_DIR/lib/sync-daemon.sh"
 chmod +x "$BIN_DIR/tokenscope"
