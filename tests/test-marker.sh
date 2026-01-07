@@ -28,12 +28,12 @@ fail() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Source the utils.sh to get the is_tracking_allowed function
+# Source the utils.sh to get the tracking functions
 source "$PROJECT_DIR/lib/utils.sh"
 
 # Create temp directory for tests
 TEST_DIR=$(mktemp -d)
-trap "rm -rf $TEST_DIR" EXIT
+trap "rm -rf $TEST_DIR; rm -f /tmp/tokenscope-marker-cache-$$" EXIT
 
 echo "═══════════════════════════════════════════════════════════"
 echo " TokenScope Marker Tests"
@@ -149,6 +149,124 @@ if is_tracking_allowed "$TEST_DIR/content-marker"; then
     pass "Marker file with content works"
 else
     fail "Marker file with content should work"
+fi
+
+# ============================================
+# Test: is_file_tracking_allowed function
+# ============================================
+echo ""
+echo "Test 7: File path tracking (is_file_tracking_allowed)"
+
+mkdir -p "$TEST_DIR/tracked-project/src"
+touch "$TEST_DIR/tracked-project/.tokenscope"
+mkdir -p "$TEST_DIR/untracked-project/src"
+
+# File in tracked project
+if is_file_tracking_allowed "$TEST_DIR/tracked-project/src/main.js"; then
+    pass "File in tracked project is allowed"
+else
+    fail "File in tracked project should be allowed"
+fi
+
+# File in untracked project
+if is_file_tracking_allowed "$TEST_DIR/untracked-project/src/main.js"; then
+    fail "File in untracked project should NOT be allowed"
+else
+    pass "File in untracked project correctly denied"
+fi
+
+# Empty file path
+if is_file_tracking_allowed ""; then
+    fail "Empty file path should NOT be allowed"
+else
+    pass "Empty file path correctly denied"
+fi
+
+# ============================================
+# Test: Cross-project file operations
+# ============================================
+echo ""
+echo "Test 8: Cross-project scenarios (CWD vs file path)"
+
+mkdir -p "$TEST_DIR/project-a"
+touch "$TEST_DIR/project-a/.tokenscope"
+mkdir -p "$TEST_DIR/project-b"
+# project-b has no marker
+
+# CWD in tracked project, file in untracked project
+if is_tracking_allowed "$TEST_DIR/project-a"; then
+    pass "CWD in project-a is tracked"
+else
+    fail "CWD in project-a should be tracked"
+fi
+
+if is_file_tracking_allowed "$TEST_DIR/project-b/file.txt"; then
+    fail "File in project-b should NOT be tracked (no marker)"
+else
+    pass "File in project-b correctly not tracked"
+fi
+
+# CWD in untracked project, file in tracked project
+if is_tracking_allowed "$TEST_DIR/project-b"; then
+    fail "CWD in project-b should NOT be tracked"
+else
+    pass "CWD in project-b correctly not tracked"
+fi
+
+if is_file_tracking_allowed "$TEST_DIR/project-a/file.txt"; then
+    pass "File in project-a is tracked (has marker)"
+else
+    fail "File in project-a should be tracked"
+fi
+
+# ============================================
+# Test: Caching behavior
+# ============================================
+echo ""
+echo "Test 9: Caching behavior"
+
+# Clear cache
+rm -f "$MARKER_CACHE_FILE"
+
+mkdir -p "$TEST_DIR/cache-test"
+touch "$TEST_DIR/cache-test/.tokenscope"
+
+# First call should populate cache
+is_tracking_allowed "$TEST_DIR/cache-test"
+if [[ -f "$MARKER_CACHE_FILE" ]]; then
+    pass "Cache file created after first check"
+else
+    fail "Cache file should be created"
+fi
+
+# Check cache contains the directory
+if grep -q "$TEST_DIR/cache-test" "$MARKER_CACHE_FILE" 2>/dev/null; then
+    pass "Directory cached after check"
+else
+    fail "Directory should be in cache"
+fi
+
+# ============================================
+# Test: Nested markers (child overrides parent - NOT supported, just inherits)
+# ============================================
+echo ""
+echo "Test 10: Nested project structure"
+
+mkdir -p "$TEST_DIR/workspace/project1/src"
+mkdir -p "$TEST_DIR/workspace/project2/src"
+touch "$TEST_DIR/workspace/.tokenscope"
+
+# Both projects should be tracked (inherit from workspace)
+if is_tracking_allowed "$TEST_DIR/workspace/project1/src"; then
+    pass "Project1 tracked (inherits from workspace)"
+else
+    fail "Project1 should be tracked"
+fi
+
+if is_tracking_allowed "$TEST_DIR/workspace/project2/src"; then
+    pass "Project2 tracked (inherits from workspace)"
+else
+    fail "Project2 should be tracked"
 fi
 
 # ============================================
