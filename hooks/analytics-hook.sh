@@ -50,6 +50,8 @@ case "$HOOK_EVENT" in
         record_session_start "$SESSION_ID" "$SOURCE" "$CWD" "$PROJECT_NAME"
         # Scan installed plugins on session start
         scan_installed_plugins 2>/dev/null || true
+        # Notify user that tracking is enabled
+        echo "TokenScope: tracking enabled for this project"
         ;;
 
     "SessionEnd")
